@@ -3,8 +3,8 @@ import backend
 import pandas
 import numpy
 import streamlit as st
+
 file_manager.check_data_folder()
-morning , afternoon , evening , daily , phaseprogress , xprewards , todos , spacedrepetition , habitdata = file_manager.load_files()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")

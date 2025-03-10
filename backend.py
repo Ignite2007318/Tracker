@@ -4,17 +4,17 @@ import json
 import main
 import file_manager
 
-
-morning_file_path = "data/morning.csv"
-evening_file_path = "data/evening.csv"
-afternoon_file_path = "data/afternoon.csv"
-habit_data_file_path = "data/habit_data.json"
-
-
+x = file_manager.files_name()
 
 def add_habit_filter(new_habit, day_time, habit_type):
+
+    a = x["morning"]
+    b = x["afternoon"]
+    c = x["evening"]
+    d = x["habit_data"]
+
     if day_time == 'Morning':
-        value = file_manager.add_new_habit(morning_file_path, habit_data_file_path, day_time, new_habit, habit_type)
+        value = file_manager.add_new_habit(a , d , day_time, new_habit, habit_type)
 
         if value == False:
             return "Habit already exist"
@@ -23,7 +23,7 @@ def add_habit_filter(new_habit, day_time, habit_type):
             return True
         
     elif day_time == 'Afternoon':
-        value = file_manager.add_new_habit(afternoon_file_path, habit_data_file_path, day_time, new_habit, habit_type)
+        value = file_manager.add_new_habit(b , d , day_time, new_habit, habit_type)
 
         if value == False:
             return "Habit already exist"
@@ -32,7 +32,7 @@ def add_habit_filter(new_habit, day_time, habit_type):
             return True
 
     elif day_time == 'Evening':
-        value = file_manager.add_new_habit(evening_file_path, habit_data_file_path, day_time, new_habit, habit_type)
+        value = file_manager.add_new_habit(c , d , day_time, new_habit, habit_type)
 
         if value == False:
             return "Habit already exist"
@@ -42,9 +42,9 @@ def add_habit_filter(new_habit, day_time, habit_type):
 
     else:
         results = {
-            "Morning": file_manager.add_new_habit(morning_file_path, habit_data_file_path, "Morning", new_habit, habit_type),
-            "Afternoon": file_manager.add_new_habit(afternoon_file_path, habit_data_file_path, "Afternoon", new_habit, habit_type),
-            "Evening": file_manager.add_new_habit(evening_file_path, habit_data_file_path, "Evening", new_habit, habit_type),
+            "Morning": file_manager.add_new_habit(a , d , "Morning", new_habit, habit_type),
+            "Afternoon": file_manager.add_new_habit(b , d , "Afternoon", new_habit, habit_type),
+            "Evening": file_manager.add_new_habit(c , d , "Evening", new_habit, habit_type),
         }
 
         if all(results.values()):

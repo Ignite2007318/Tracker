@@ -12,7 +12,8 @@ FILES = {
     "xp_points.csv": ["Phase" , "Day" , "Date"],
     "phases_todos.json": {},
     "spaced_repetition.csv": ["Subject" , "Topic", "Sub-Topic", "Hardness", "Last_Revised", "Next_Revision"],
-    "habit_data.json" : {}
+    "habit_data.json" : {},
+    "system_setting.json" : {}
 }
 
 def check_data_folder():
@@ -31,11 +32,18 @@ def check_and_create_files():
                 with open(file_path, "w") as f:
                     json.dump(default_content, f)
 
+def files_name():
+  d = {}
+
+  for i in FILES:
+    x = i
+    i = i.split('.')
+    d[i[0]] = x 
+
+  return d
+
 def load_data(file_name):
-    file_path = os.path.join(file_name)
-    
-    if not os.path.exists(file_path):
-        return None
+    file_path = os.path.join(DATA_FOLDER , file_name)
     
     if file_name.endswith(".csv"):
         return pd.read_csv(file_path)
@@ -46,36 +54,24 @@ def load_data(file_name):
     
     return None
 
-def load_files():
-   morning = load_data('morning.csv')
-   afternoon = load_data('afternoon.csv')
-   evening = load_data('evening.csv')
-   daily= load_data('daily.csv')
-   phaseprogress = load_data('phase_target.csv')
-   xprewards = load_data('xp_points.csv')
-   todos = load_data('phases_todos.json')
-   spacedrepetition= load_data('spaced_repetition.csv')
-   habitdata = load_data('habit_data.json')
-
-   return morning , afternoon , evening , daily , phaseprogress , xprewards , todos , spacedrepetition , habitdata
-
-def add_new_habit(csvfilepath, jsonfilepath, day_time, newhabit, dtype):
-    csv_data = load_data(csvfilepath)  
-    json_data = load_data(jsonfilepath) 
+def add_new_habit(csvfilename, jsonfilename, day_time, newhabit, dtype):
+    csv_data = load_data(csvfilename)  
+    json_data = load_data(jsonfilename)  
 
     if day_time not in json_data:
         json_data[day_time] = {}
 
     if newhabit in csv_data.columns and newhabit in json_data[day_time]:
-        return False 
+        return False  
 
     csv_data[newhabit] = pd.NA  
 
-    csv_data.to_csv(csvfilepath, index=False)
+    csv_data.to_csv(os.path.join(DATA_FOLDER, csvfilename), index=False)  
 
     json_data[day_time][newhabit] = dtype
-    with open(jsonfilepath, "w") as f:
+    with open(os.path.join(DATA_FOLDER, jsonfilename), "w") as f:
         json.dump(json_data, f, indent=4)
 
-    return True
+    return True  
+
 
