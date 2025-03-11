@@ -4,9 +4,6 @@ import json
 
 DATA_FOLDER = "data"
 FILES = {
-    "morning.csv": ["Phase" , "Day" , "Date" ],
-    "evening.csv": ["Phase" , "Day" , "Date" ],
-    "afternoon.csv": ["Phase" , "Day" , "Date" ],
     "daily.csv": ["Phase" , "Day" , "Date" ],
     "phase_target.csv": ["Phase", "Day" , 'Date'],
     "xp_points.csv": ["Phase" , "Day" , "Date"],
@@ -72,6 +69,13 @@ def add_new_habit(csvfilename, jsonfilename, day_time, newhabit, dtype):
     with open(os.path.join(DATA_FOLDER, jsonfilename), "w") as f:
         json.dump(json_data, f, indent=4)
 
-    return True  
+    return True
+
+def user_data(user_name , jsonfilename):
+
+    user_name  = {"user_name " : user_name}
+    journey_starts = {"journey_starts" : True}
+    with open(os.path.join(DATA_FOLDER, jsonfilename), "w") as f:
+        json.dump((user_name , journey_starts), f, indent=4)
 
 
