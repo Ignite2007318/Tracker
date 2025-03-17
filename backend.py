@@ -2,8 +2,13 @@ import pandas as pd
 import numpy as np
 import json 
 import file_manager
+import datetime as dt  
 
 x = file_manager.files_name()
+
+def today_date():
+ today_date = dt.datetime.today().strftime("%Y-%m-%d")
+ return today_date
 
 def add_habit_filter(new_habit, habit_type):
    
@@ -38,6 +43,24 @@ def add_default(user_name):
       add_habit_filter(habit_name , habit_type)
 
       file_manager.user_data(user_name , file_path )
+
+def daily_row_add():
+
+   value = file_manager.load_data(x["daily"])
+
+   check_value  = file_manager.check_journey_start(x["system_setting"])
+
+   if check_value == True:
+      empty = file_manager.is_file_empty(x["daily"])
+      if empty :
+         file_manager.add_today_if_empty(x["daily"] ,  x["system_setting"] ,today_date())
+      else :
+         y = value.tail(1)['Date'].values[0] == today_date() 
+         if y == False:
+            file_manager.daily_file_row_add(x["daily"] , x["system_setting"] , today_date())
+         
+
+   
         
 
 

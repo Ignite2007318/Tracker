@@ -73,9 +73,79 @@ def add_new_habit(csvfilename, jsonfilename, day_time, newhabit, dtype):
 
 def user_data(user_name , jsonfilename):
 
-    user_name  = {"user_name " : user_name}
-    journey_starts = {"journey_starts" : True}
+    user_info = {
+        "user_name": user_name,
+        "journey_starts": True
+    }
     with open(os.path.join(DATA_FOLDER, jsonfilename), "w") as f:
-        json.dump((user_name , journey_starts), f, indent=4)
+        json.dump((user_info), f, indent=4)
+
+def check_journey_start(file_name):
+    data = load_data(file_name)
+    return "journey_starts" in data and data["journey_starts"] is True
+
+
+def add_today_if_empty(file_path_csv , file_path_json ,  today):
+
+    df = load_data(file_path_csv)
+    data = load_data(file_path_json)
+
+    file_path_csv = os.path.join(DATA_FOLDER, file_path_csv)
+    file_path_json = os.path.join(DATA_FOLDER, file_path_json)
+
+    new_row = {col: "NA" for col in df.columns}
+    new_row["Date"] = today
+    new_row["Phase"] = 1
+    new_row["Day"] = 1
+
+    if "current" not in data:
+        data["current"] = {}
+
+    data["current"]["start_date"] = today
+    data["current"]["current_phase"] = 1
+    data["current"]["current_day"] = 1
+
+    with open(file_path_json , "w") as f:
+        json.dump(data, f, indent=4)
+
+    df = pd.DataFrame([new_row])
+    df.to_csv(file_path_csv, index=False)
+
+def is_file_empty(file_path):
+    df = load_data(file_path)
+    return df.empty
+
+def daily_file_row_add(csv_file , json_file , today):
+    daily_csv = load_data(csv_file)
+    setting_json = load_data(json_file)
+
+    file_path_csv = os.path.join(DATA_FOLDER, csv_file)
+    file_path_json = os.path.join(DATA_FOLDER, json_file)
+
+    current_phase = setting_json['current']['current_phase']
+    current_day = setting_json['current']['current_day']
+
+    current_day += 1 
+
+    if current_day > 10 :
+        current_phase += 1 
+        current_day = 1
+
+    setting_json["current"]["current_phase"] = current_phase
+    setting_json["current"]["current_day"] = current_day
+
+    new_row = {col: "NA" for col in daily_csv.columns}
+    new_row["Date"] = today
+    new_row["Phase"] = current_phase
+    new_row["Day"] = current_day
+
+    with open(file_path_json , "w") as f:
+        json.dump(setting_json, f, indent=4)
+
+    updated_csv = pd.concat([daily_csv, pd.DataFrame([new_row])], ignore_index=True)
+    updated_csv.fillna("NA", inplace=True)
+    updated_csv.to_csv(file_path_csv, index=False)
+
+
 
 

@@ -7,6 +7,7 @@ import streamlit as st
 st.set_page_config(layout="wide")
 
 file_manager.check_data_folder()
+backend.daily_row_add()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
@@ -40,16 +41,7 @@ if page == "Add Habit":
             st.warning(x)
 
 if page == "Default":
-    col1 , col2 , col3 = st.columns(3)
-
-    with col1:
-        user_name = st.text_input("Enter you'r name hare")
-
-    with col2:
-        start_phase = st.text_input("Enter you'r first phase" , value="1")
-
-    with col3:
-        start_day = st.text_input("Enter you'r first day" , value="1")
+    user_name = st.text_input("Enter you'r name hare")
 
     st.header("Some Default Habits")
     col1 , col2 , col3 = st.columns(3)
