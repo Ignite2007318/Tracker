@@ -25,14 +25,14 @@ def add_habit_filter(new_habit, habit_type):
 def add_default(user_name):
    
     default_habits = {
-     "Wake up time": "Numeric value",
+     "Wake up Time": "Time",
      "Sleep Quality": "Range from 1 to 10",
      "Exercise/Workout": "Yes/No",
      "Energy Levels": "Range from 1 to 10",
      "Focus Levels": "Range from 1 to 10",
      "Mental Exhaustion Level": "Range from 1 to 10",
-     "Screen Time": "Numeric value",
-     "Total Study Time": "Numeric value",
+     "Screen Time": "Time",
+     "Total Study Time": "Time",
      "Mood": "Range from 1 to 10"
 }
     file_path = x["system_setting"]
@@ -58,6 +58,50 @@ def daily_row_add():
          y = value.tail(1)['Date'].values[0] == today_date() 
          if y == False:
             file_manager.daily_file_row_add(x["daily"] , x["system_setting"] , today_date())
+
+def habit_update():
+   df = file_manager.load_data(x["daily"])
+   js = file_manager.load_data(x["habit_data"])
+
+   col = df.columns
+
+   today = df[df['Date'] == today_date()]
+   today = today.iloc[0]
+
+   dict = {}
+
+   for i in col :
+
+      currentval = today[i]
+      habittype = js["daily_habit"].get(i, None)
+
+      if isinstance(currentval, float) and np.isnan(currentval):
+           currentval = None
+
+      dict[i] = {
+         "current_val": currentval,
+         "habit_type": habittype 
+      }
+      
+   return dict
+
+def updated_habit_js(json_data , file_path):
+
+   if isinstance(json_data, str):
+        json_data = json.loads(json_data)
+
+   df = pd.DataFrame([json_data])
+
+   df = df.where(pd.notna(df), "None")
+
+   todaydate = today_date()
+
+   value = file_manager.updated_habit_to_csv(df , file_path , todaydate)
+
+   if value :
+      return True
+
+
          
 
    

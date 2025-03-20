@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 import json
 
 DATA_FOLDER = "data"
@@ -61,7 +62,7 @@ def add_new_habit(csvfilename, jsonfilename, day_time, newhabit, dtype):
     if newhabit in csv_data.columns and newhabit in json_data[day_time]:
         return False  
 
-    csv_data[newhabit] = pd.NA  
+    csv_data[newhabit] = pd.NA
 
     csv_data.to_csv(os.path.join(DATA_FOLDER, csvfilename), index=False)  
 
@@ -71,14 +72,20 @@ def add_new_habit(csvfilename, jsonfilename, day_time, newhabit, dtype):
 
     return True
 
-def user_data(user_name , jsonfilename):
+def user_data(user_name, jsonfilename):
+    file_path = os.path.join(DATA_FOLDER, jsonfilename)
 
-    user_info = {
-        "user_name": user_name,
-        "journey_starts": True
-    }
-    with open(os.path.join(DATA_FOLDER, jsonfilename), "w") as f:
-        json.dump((user_info), f, indent=4)
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            user_info = json.load(f)
+    else:
+        user_info = {}
+
+    user_info["user_name"] = user_name
+    user_info["journey_starts"] = True
+
+    with open(file_path, "w") as f:
+        json.dump(user_info, f, indent=4)
 
 def check_journey_start(file_name):
     data = load_data(file_name)
@@ -145,6 +152,40 @@ def daily_file_row_add(csv_file , json_file , today):
     updated_csv = pd.concat([daily_csv, pd.DataFrame([new_row])], ignore_index=True)
     updated_csv.fillna("NA", inplace=True)
     updated_csv.to_csv(file_path_csv, index=False)
+
+def replace_na(file_name):
+    df = load_data(file_name)
+
+    df = df.astype(str)
+
+    df.replace("nan", "None", inplace=True) 
+
+    file_path = os.path.join(DATA_FOLDER, file_name)
+    df.to_csv(file_path, index=False)
+
+def updated_habit_to_csv(new_df, file_path, todaydate):
+    daily = load_data(file_path)  
+
+    index_to_replace = daily[daily["Date"] == todaydate].index
+
+    if not index_to_replace.empty:
+        daily.loc[index_to_replace] = new_df.values
+
+    else:
+        daily = pd.concat([daily, new_df], ignore_index=True)
+
+    file_path = os.path.join(DATA_FOLDER, file_path)
+    daily.to_csv(file_path, index=False)
+    
+    return True
+
+
+    
+
+
+
+
+
 
 
 
