@@ -13,7 +13,7 @@ file_manager.replace_na(x["daily"])
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
-page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" ,  "Default"] , key = "sidebar_radio")
+page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" ,  "Default" , "Phase Target"] , key = "sidebar_radio")
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -107,23 +107,15 @@ if page == "Default":
 
     with col1:
      st.write("""
-- *Wake up time* (Numeric)
-- *Sleep Quality* (Range 1-10)
+- *Wake up time* (Time)
 - *Exercise/Workout* (Yes/No)""")
      
     with col2: 
         st.write("""
-- *Energy Levels* (Range 1-10)
-- *Focus Levels* (Range 1-10)
-- *Mental Exhaustion Level* (Range 1-10) """)
-         
-    with col3:
-        st.write("""
-- *Screen Time* (Minutes/Hours, Numeric)
-- *Total Study Time (minutes)* (Numeric)
-- *Mood* (Range 1-10)""")
+- Screen Time (Time)
+- Study Time (Time)""")
         
-    st.write("💡 *These are the default habits for tracking daily performance and productivity!*")
+    st.write("*These are the default habits for tracking*")
 
     clicked = st.button('Save Info')
 
@@ -131,6 +123,8 @@ if page == "Default":
         backend.add_default(user_name)
         st.balloons()
         st.success(f"Have a wonderful journey, {user_name}")
+
+
 
 
 

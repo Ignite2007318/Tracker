@@ -26,14 +26,9 @@ def add_default(user_name):
    
     default_habits = {
      "Wake up Time": "Time",
-     "Sleep Quality": "Range from 1 to 10",
      "Exercise/Workout": "Yes/No",
-     "Energy Levels": "Range from 1 to 10",
-     "Focus Levels": "Range from 1 to 10",
-     "Mental Exhaustion Level": "Range from 1 to 10",
      "Screen Time": "Time",
-     "Total Study Time": "Time",
-     "Mood": "Range from 1 to 10"
+     "Study Time": "Time",
 }
     file_path = x["system_setting"]
  
