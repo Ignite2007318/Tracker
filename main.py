@@ -3,6 +3,7 @@ import backend
 import pandas
 import numpy
 import streamlit as st
+from datetime import time
 
 st.set_page_config(layout="wide")
 
@@ -13,7 +14,7 @@ file_manager.replace_na(x["daily"])
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
-page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" ,  "Default" , "Phase Target"] , key = "sidebar_radio")
+page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" , "Update Phase Target" ] , key = "sidebar_radio")
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -32,7 +33,8 @@ if page == "Add Habit":
             ('Yes/No' , 'Range from 1 to 10' , 'Numeric value' , 'Time') 
         )
 
-    clicked = st.button("Save Habit" , disabled=not new_habit.strip())
+    new_habit = new_habit.strip()
+    clicked = st.button("Save Habit", disabled=not new_habit)
     if clicked:
         x = backend.add_habit_filter(new_habit , habit_type)
         if x == True:
@@ -77,27 +79,25 @@ if page == "Habit Update":
                 options=[None] + list(range(1, 11)), 
                 index=0 if current_val is None else list(range(1, 11)).index(current_val) + 1
             )
-        
+
         elif habit_type == "Time":
-            user_inputs[habit] = st.time_input(f"{habit} (Time)", value=current_val)
+        
+            if isinstance(current_val, (int, float)):
+                display_time = time(int(current_val // 60), int(current_val % 60))  
+            else:
+                display_time = time(0, 0)
 
-    col1 , col2 = st.columns(2)
+            input_time = st.time_input(f"{habit} (Time)", value=display_time)
 
-    with col1:
-        st.write("### Submitted Data")
-        st.json(user_inputs)
+            user_inputs[habit] = input_time.hour * 60 + input_time.minute
 
-    with col2:
-        clicked = st.button("Save")
+    clicked = st.button("Save")
 
     if clicked :
         value = backend.updated_habit_js(user_inputs , x['daily'])
 
         if value == True:
             st.success("Successfully Added")
-
-
-    
 
 if page == "Default":
     user_name = st.text_input("Enter you'r name hare")
@@ -124,21 +124,56 @@ if page == "Default":
         st.balloons()
         st.success(f"Have a wonderful journey, {user_name}")
 
+if page == "Phase Target":
+    st.header("Phase Target")
 
+    time_based_habits , numeric_habits = backend.get_phase_target_habit()
 
+    current_habit = st.selectbox("Select a Habit",time_based_habits + numeric_habits)
 
+    if current_habit in time_based_habits:
+       value =  st.number_input("Time in Hours" , min_value= 0 , step=1)
+       st.write("Habit : {} , Target : {} Hours".format(current_habit , value))
+       value *= 60
 
+    else :
+        value =  st.number_input("Enter a Numeric Value" , min_value= 0.0 , step= 0.1)
+        st.write("Habit : {} , Target : {}".format(current_habit , value))
 
+    clicked = st.button("Save")
 
+    if clicked == True:
+        value = file_manager.add_new_phase_target(current_habit , value)
 
+        if value:
+            st.success("Succesfully Added")
+        else:
+            st.warning("Target Already Exist")
 
+if page == "Update Phase Target":
+    st.header("Update Phase Target")
 
+    habit_target , habit_type = backend.update_phase_target_list()
 
+    selected_habit = st.selectbox("Select a Target to Update", options=list(habit_target.keys()))
 
+    value = habit_type[selected_habit]
+    default_value = habit_target[selected_habit]
+    
+    if value == "Time":
+        new_input = st.number_input("Enter New Target In Hours(Current Target is Given as default)" , min_value = 0 , step=1 , value=default_value//60)
+        st.text("Habit to update : {} | New Target : {} Hours".format(selected_habit , new_input))
+        new_input *= 60
 
+    else:
+        new_input = st.number_input("Enter New Target(Current Target is Given as default)" , min_value = 0.0 , step=0.1 , value=default_value)
+        st.text("Habit to update : {} | New Target : {}".format(selected_habit , new_input))
 
+    clicked = st.button("Save")
 
+    if clicked == True:
+        value = file_manager.update_new_phase_target(selected_habit , new_input)
 
-
-
+        if value :
+            st.success("New Target Updated")
 

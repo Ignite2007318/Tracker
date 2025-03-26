@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import json
 
+
+
 DATA_FOLDER = "data"
 FILES = {
     "daily.csv": ["Phase" , "Day" , "Date" ],
@@ -155,9 +157,7 @@ def daily_file_row_add(csv_file , json_file , today):
 
 def replace_na(file_name):
     df = load_data(file_name)
-
     df = df.astype(str)
-
     df.replace("nan", "None", inplace=True) 
 
     file_path = os.path.join(DATA_FOLDER, file_name)
@@ -165,7 +165,6 @@ def replace_na(file_name):
 
 def updated_habit_to_csv(new_df, file_path, todaydate):
     daily = load_data(file_path)  
-
     index_to_replace = daily[daily["Date"] == todaydate].index
 
     if not index_to_replace.empty:
@@ -179,13 +178,47 @@ def updated_habit_to_csv(new_df, file_path, todaydate):
     
     return True
 
+def extract_file_names(name):
+    x = files_name()
+    x = x[name]
+    return x
 
+def add_new_phase_target(habit, habit_target):
+    phase_target = load_data(extract_file_names("phase_target"))
+    habit_data = load_data(extract_file_names("habit_data"))
+
+    if habit in phase_target.columns:
+        return False
+
+    phase_target[habit] = pd.NA  
+
+    if "phase_target" not in habit_data:
+        habit_data["phase_target"] = {}  
+
+    habit_data["phase_target"][habit] = habit_target
+
+    phase_target_file_path = os.path.join(DATA_FOLDER, extract_file_names('phase_target'))
+    habit_data_file_path = os.path.join(DATA_FOLDER, extract_file_names('habit_data'))
+
+    phase_target.to_csv(phase_target_file_path, index=False)
+
+    with open(habit_data_file_path, "w") as f:
+        json.dump(habit_data, f, indent=4)
+
+    return True
+
+def update_new_phase_target(habit , new_target):
+    data = load_data(extract_file_names('habit_data'))
+
+    data['phase_target'][habit] = new_target
+
+    habit_data_file_path = os.path.join(DATA_FOLDER, extract_file_names('habit_data'))
+
+    with open(habit_data_file_path, "w") as f:
+        json.dump(data, f, indent=4)
+
+    return True
     
-
-
-
-
-
 
 
 

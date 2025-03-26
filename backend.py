@@ -95,12 +95,23 @@ def updated_habit_js(json_data , file_path):
 
    if value :
       return True
-
-
-         
-
    
-        
+def get_phase_target_habit():
+    json_file = file_manager.load_data(x["habit_data"])
 
+    daily_habit = json_file.get("daily_habit", {})
 
+    time_based_habits = [key for key, value in daily_habit.items() if value.lower() == "time"]
+    numeric_habits = [key for key, value in daily_habit.items() if "numeric value" in value.lower()]
+
+    return time_based_habits, numeric_habits
+
+def update_phase_target_list():
+   data = file_manager.load_data(x['habit_data'])
+
+   habit_target = data['phase_target']
+   habit_type = data['daily_habit']
+
+   return habit_target , habit_type
+   
 
