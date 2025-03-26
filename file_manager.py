@@ -155,13 +155,6 @@ def daily_file_row_add(csv_file , json_file , today):
     updated_csv.fillna("NA", inplace=True)
     updated_csv.to_csv(file_path_csv, index=False)
 
-def replace_na(file_name):
-    df = load_data(file_name)
-    df = df.astype(str)
-    df.replace("nan", "None", inplace=True) 
-
-    file_path = os.path.join(DATA_FOLDER, file_name)
-    df.to_csv(file_path, index=False)
 
 def updated_habit_to_csv(new_df, file_path, todaydate):
     daily = load_data(file_path)  
@@ -187,13 +180,13 @@ def add_new_phase_target(habit, habit_target):
     phase_target = load_data(extract_file_names("phase_target"))
     habit_data = load_data(extract_file_names("habit_data"))
 
-    if habit in phase_target.columns:
+    if "phase_target" not in habit_data:
+        habit_data["phase_target"] = {}
+
+    if habit in habit_data["phase_target"]:
         return False
 
-    phase_target[habit] = pd.NA  
-
-    if "phase_target" not in habit_data:
-        habit_data["phase_target"] = {}  
+    phase_target[habit] = pd.NA   
 
     habit_data["phase_target"][habit] = habit_target
 
@@ -218,7 +211,43 @@ def update_new_phase_target(habit , new_target):
         json.dump(data, f, indent=4)
 
     return True
+
+def phase_target_update_row(today):
+    phase_target = load_data(extract_file_names('phase_target'))
+    daily = load_data(extract_file_names('daily'))
+    system_setting = load_data(extract_file_names('system_setting'))
+
+    current_phase = system_setting['current']['current_phase']
+    current_day = system_setting['current']['current_day']
+    current_date = today
+
+    daily = daily[daily['Phase'] == current_phase]
+
+    habit_columns = list(phase_target.columns[3:])
+
+    daily = daily[habit_columns]
+
+    numeric_cols = daily.select_dtypes(include=['number']).columns
+    daily_sum = daily[numeric_cols].sum().to_frame().T
+
+
+    daily_sum.insert(0, 'Phase', current_phase)
+    daily_sum.insert(1, 'Day', current_day)
+    daily_sum.insert(2, 'Date', current_date)
+
+    existing_entry = (phase_target['Phase'] == current_phase) & (phase_target['Day'] == current_day)
     
+    if existing_entry.any():
+        phase_target.loc[existing_entry, habit_columns] = daily_sum[habit_columns].values
+    else:
+        phase_target = pd.concat([phase_target, daily_sum], ignore_index=True)
+
+    phase_target_file_path = os.path.join(DATA_FOLDER, extract_file_names('phase_target'))
+    phase_target.to_csv(phase_target_file_path, index=False)
+
+    return True
+
+
 
 
 

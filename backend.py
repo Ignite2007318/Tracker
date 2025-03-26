@@ -47,12 +47,16 @@ def daily_row_add():
 
    if check_value == True:
       empty = file_manager.is_file_empty(x["daily"])
+
       if empty :
          file_manager.add_today_if_empty(x["daily"] ,  x["system_setting"] ,today_date())
+
       else :
          y = value.tail(1)['Date'].values[0] == today_date() 
+
          if y == False:
             file_manager.daily_file_row_add(x["daily"] , x["system_setting"] , today_date())
+            update_phase_target()
 
 def habit_update():
    df = file_manager.load_data(x["daily"])
@@ -113,5 +117,9 @@ def update_phase_target_list():
    habit_type = data['daily_habit']
 
    return habit_target , habit_type
+
+def update_phase_target():
+   file_manager.phase_target_update_row(today_date())
+
    
 

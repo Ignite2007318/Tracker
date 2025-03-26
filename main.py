@@ -1,3 +1,4 @@
+#streamlit run main.py
 import file_manager
 import backend
 import pandas
@@ -10,7 +11,6 @@ st.set_page_config(layout="wide")
 x = file_manager.files_name()
 file_manager.check_data_folder()
 backend.daily_row_add()
-file_manager.replace_na(x["daily"])
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
@@ -97,6 +97,7 @@ if page == "Habit Update":
         value = backend.updated_habit_js(user_inputs , x['daily'])
 
         if value == True:
+            backend.update_phase_target()
             st.success("Successfully Added")
 
 if page == "Default":
