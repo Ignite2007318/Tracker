@@ -121,5 +121,108 @@ def update_phase_target_list():
 def update_phase_target():
    file_manager.phase_target_update_row(today_date())
 
-   
+def check_correct_todo_phase(todo , selected_phase):
 
+   todo = todo.split("\n")
+   new_todo = []
+
+   for t in todo:
+      t = t.strip()
+      if t:
+        new_todo.append(t)
+
+   l = len(new_todo)
+
+   if l == 10:
+      value = add_phase_todo(new_todo , selected_phase)
+      return True
+   
+   else:
+      return False
+
+   
+def add_phase_todo(todos , phase):
+
+   phase = int(phase[-1])
+
+   phases_todo = file_manager.load_data(x["phases_todos"])
+   system_setting = file_manager.load_data(x["system_setting"])
+
+   empty = file_manager.is_file_empty(x["phases_todos"])
+   current_phase = system_setting['current']['current_phase']
+   Phase = 0
+
+   if phase == current_phase:
+      Phase = current_phase
+   
+   else:
+      Phase = current_phase + 1
+
+   if empty:
+      task_id = 1
+      Day = 0
+
+   else:
+      last_task = phases_todo.iloc[-1]
+      task_id = last_task["Task ID"] + 1
+      Day = 0
+
+   todolist = []
+
+   for day in todos:
+    Day += 1
+    day = day.split(",")
+
+    for task in day:
+      task = task.strip()
+
+      if task:
+        todolist.append({
+            "Phase": Phase,
+            "Day": Day,
+            "Task ID": task_id, 
+            "Task": task,  
+            "Completed": False
+        })
+      task_id += 1
+
+   file_manager.save_to_csv(todolist , x["phases_todos"])
+
+def is_valid_string(s):
+    
+    if '\n' in s:
+        return "The task contains multiple lines."
+    
+    elif ',' in s:
+        return "The task contains commas."
+    
+    elif len(s) > 20:
+        return "The task exceeds 20 characters."
+    
+    return True
+
+def edit_phase_todo(task , phase , day):
+
+   phases_todo = file_manager.load_data(x["phases_todos"])
+
+   last_row = phases_todo.iloc[-1]
+   task_id = last_row["Task ID"] + 1
+
+   phase = int(phase[-1])
+
+   tolist = []
+
+   z = is_valid_string(task)
+
+   if z:
+      task.strip()
+      tolist.append({
+         "Phase" : phase,
+         "Day" : day,
+         "Task ID" : task_id,
+         "Task Description" : task,
+         "Completed" : False })
+   
+   value = file_manager.save_to_csv(tolist , x["phases_todos"])
+
+   return value

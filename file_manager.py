@@ -10,7 +10,7 @@ FILES = {
     "daily.csv": ["Phase" , "Day" , "Date" ],
     "phase_target.csv": ["Phase", "Day" , 'Date'],
     "xp_points.csv": ["Phase" , "Day" , "Date"],
-    "phases_todos.json": {},
+    "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed"],
     "spaced_repetition.csv": ["Subject" , "Topic", "Sub-Topic", "Hardness", "Last_Revised", "Next_Revision"],
     "habit_data.json" : {},
     "system_setting.json" : {}
@@ -230,7 +230,6 @@ def phase_target_update_row(today):
     numeric_cols = daily.select_dtypes(include=['number']).columns
     daily_sum = daily[numeric_cols].sum().to_frame().T
 
-
     daily_sum.insert(0, 'Phase', current_phase)
     daily_sum.insert(1, 'Day', current_day)
     daily_sum.insert(2, 'Date', current_date)
@@ -239,6 +238,7 @@ def phase_target_update_row(today):
     
     if existing_entry.any():
         phase_target.loc[existing_entry, habit_columns] = daily_sum[habit_columns].values
+
     else:
         phase_target = pd.concat([phase_target, daily_sum], ignore_index=True)
 
@@ -247,8 +247,16 @@ def phase_target_update_row(today):
 
     return True
 
+import pandas as pd
 
+def save_to_csv(data, file_name):
 
+    data = pd.DataFrame(data)
 
+    file_path = f"data/{file_name}"
+
+    data.to_csv(file_path, mode='a', index=False, header=False)
+
+    return True
 
 

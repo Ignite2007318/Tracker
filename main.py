@@ -2,7 +2,7 @@
 import file_manager
 import backend
 import pandas
-import numpy
+import numpy as np
 import streamlit as st
 from datetime import time
 
@@ -14,7 +14,7 @@ backend.daily_row_add()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
-page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" , "Update Phase Target" ] , key = "sidebar_radio")
+page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" , "Update Phase Target" , "Phase Todo's" ] , key = "sidebar_radio")
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -177,4 +177,57 @@ if page == "Update Phase Target":
 
         if value :
             st.success("New Target Updated")
+
+if page == "Phase Todo's":
+    system_setting = file_manager.load_data(x["system_setting"])
+    current = system_setting['current']['current_phase']
+
+    st.title("Phase Todo's")
+
+    selected_value = st.radio("Select Mode" , ["Phase Mode" , "Edit Mode"])
+
+    if selected_value == "Phase Mode":
+
+        todos = st.text_area("Enter You'r Phase Todos")
+        selected_phase = st.radio("Saving For", [f"Current Phase = {current}" , f"For Next Phase = {current+1}"])
+
+        clicked = st.button("Save")
+
+        if clicked:
+            x = backend.check_correct_todo_phase(todos , selected_phase)
+            if x:
+                st.success("Todo's are updated successfully")
+            else:
+                st.warning("There are not 10 days")
+    
+    if selected_value == "Edit Mode":
+
+        col1 , col2 , col3 = st.columns(3)
+        
+        with col1:
+            task = st.text_input("Enter a Task")
+        
+        with col2:
+            selected_phase = st.radio("Saving For", [f"Current Phase = {current}" , f"For Next Phase = {current+1}"])
+
+        with col3:
+            array = np.arange(1,11).tolist()
+            day = st.selectbox('Select a day' , array)
+
+        x = backend.is_valid_string(task)
+
+        if x != True:
+            st.warning(x)
+
+        else:
+            clicked = st.button('Save' , )
+
+            if clicked:
+              z = backend.edit_phase_todo(task , selected_phase , day)
+
+              if z:
+                 st.success("Added Successfully")
+
+
+
 
