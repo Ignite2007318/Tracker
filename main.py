@@ -1,4 +1,4 @@
-#streamlit run main.py
+# streamlit run main.py
 import file_manager
 import backend
 import pandas
@@ -184,7 +184,7 @@ if page == "Phase Todo's":
 
     st.title("Phase Todo's")
 
-    selected_value = st.radio("Select Mode" , ["Phase Mode" , "Edit Mode"])
+    selected_value = st.radio("Select Mode" , ["Phase Mode" , "Edit Mode" , "Update Completed Todo"])
 
     if selected_value == "Phase Mode":
 
@@ -220,13 +220,47 @@ if page == "Phase Todo's":
             st.warning(x)
 
         else:
-            clicked = st.button('Save' , )
+            clicked = st.button('Save')
 
             if clicked:
               z = backend.edit_phase_todo(task , selected_phase , day)
 
               if z:
                  st.success("Added Successfully")
+
+    if selected_value == "Update Completed Todo":
+        st.header('Update Phase Todo')
+        data, unique_days = backend.filter_phase_todo()
+
+        updated_completion_status = {}
+
+        for i in range(0, len(unique_days), 3):
+            cols = st.columns(3)
+        
+            for j in range(3):
+                if i + j < len(unique_days):
+
+                    day = unique_days[i + j]
+                    task_row = data[data['Day'] == day]
+
+                    with cols[j]:
+                        st.subheader(f"Day {day}")
+
+                        for index, row in task_row.iterrows():
+                            checked = st.checkbox(f"{row['Task Description']}", 
+                                                        value=row["Completed"], 
+                                                        key=row["Task ID"])
+                            updated_completion_status[row["Task ID"]] = checked
+
+            st.markdown("---")
+
+        clicked = st.button("Save")
+
+        if clicked:
+            value = backend.save_phase_todos(updated_completion_status)
+            
+            if value:
+                st.success('Saved Successfully')
 
 
 

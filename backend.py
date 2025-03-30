@@ -1,3 +1,4 @@
+# streamlit run main.py
 import pandas as pd
 import numpy as np
 import json 
@@ -134,7 +135,7 @@ def check_correct_todo_phase(todo , selected_phase):
    l = len(new_todo)
 
    if l == 10:
-      value = add_phase_todo(new_todo , selected_phase)
+      add_phase_todo(new_todo , selected_phase)
       return True
    
    else:
@@ -186,7 +187,7 @@ def add_phase_todo(todos , phase):
         })
       task_id += 1
 
-   file_manager.save_to_csv(todolist , x["phases_todos"])
+   file_manager.save_to_csv_append(todolist , x["phases_todos"])
 
 def is_valid_string(s):
     
@@ -223,6 +224,31 @@ def edit_phase_todo(task , phase , day):
          "Task Description" : task,
          "Completed" : False })
    
-   value = file_manager.save_to_csv(tolist , x["phases_todos"])
+   value = file_manager.save_to_csv_append(tolist , x["phases_todos"])
 
    return value
+
+def filter_phase_todo():
+
+   df = file_manager.load_data(x["phases_todos"])
+   settings = file_manager.load_data(x["system_setting"])
+
+   phase = settings['current']['current_phase']
+
+   data = df[df["Phase"] == phase]
+
+   unique_days = data['Day'].unique()
+
+   return data , unique_days
+
+def save_phase_todos(data):
+
+   df = file_manager.load_data(x["phases_todos"])
+   
+   for task_id , status in data.items():
+        df.loc[df["Task ID"] == task_id, "Completed"] = status
+
+   file_manager.save_to_csv_update(df , x["phases_todos"])
+
+   return True 
+   

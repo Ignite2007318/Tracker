@@ -1,3 +1,4 @@
+# streamlit run main.py
 import os
 import pandas as pd
 import numpy as np
@@ -247,9 +248,7 @@ def phase_target_update_row(today):
 
     return True
 
-import pandas as pd
-
-def save_to_csv(data, file_name):
+def save_to_csv_append(data, file_name):
 
     data = pd.DataFrame(data)
 
@@ -258,5 +257,13 @@ def save_to_csv(data, file_name):
     data.to_csv(file_path, mode='a', index=False, header=False)
 
     return True
+
+def save_to_csv_update(data , file_name):
+
+    df = pd.DataFrame(data)
+
+    file_path = f"data/{file_name}"
+    
+    df.to_csv(file_path, index=False)
 
 
