@@ -192,13 +192,13 @@ def add_phase_todo(todos , phase):
 def is_valid_string(s):
     
     if '\n' in s:
-        return "The task contains multiple lines."
+        return "Contains multiple lines."
     
     elif ',' in s:
-        return "The task contains commas."
+        return "Contains commas."
     
     elif len(s) > 20:
-        return "The task exceeds 20 characters."
+        return "Exceeds 20 characters."
     
     return True
 
@@ -213,9 +213,9 @@ def edit_phase_todo(task , phase , day):
 
    tolist = []
 
-   z = is_valid_string(task)
+   valid = is_valid_string(task)
 
-   if z:
+   if valid:
       task.strip()
       tolist.append({
          "Phase" : phase,
@@ -251,4 +251,64 @@ def save_phase_todos(data):
    file_manager.save_to_csv_update(df , x["phases_todos"])
 
    return True 
+
+def check_subject_exist(subject):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if subject in habit_data["subject_data"].keys():
+      return False
    
+   else: 
+      value = save_subject_topic(subject)
+      return value
+   
+def check_topic_exist(subject , topic):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if topic in habit_data['subject_data'][subject]:
+      return False
+
+   else :
+      value = save_subject_topic(subject , topic)
+      return value   
+
+def save_subject_topic(new_subject, topics=None):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   habit_data.setdefault("subject_data", {})
+   habit_data["subject_data"].setdefault(new_subject, [])
+
+   if topics:
+      if isinstance(topics, list):
+            habit_data["subject_data"][new_subject].extend(topics)
+      else:
+            habit_data["subject_data"][new_subject].append(topics)
+
+   file_manager.save_to_json(habit_data, x["habit_data"])  
+   return True
+
+
+def subject_list():
+   habit_data = file_manager.load_data(x["habit_data"]) or {}  
+
+   if "subject_data" in habit_data:
+        return list(habit_data["subject_data"].keys())
+
+   return []
+
+def is_valid_topic_subject(s):
+
+   if not s.strip():
+      return "Cannot be empty."
+    
+   if '\n' in s:
+      return "Contains multiple lines."
+    
+   if ',' in s:
+      return "Contains commas."
+    
+   if len(s) > 60:
+      return "Exceeds 60 characters."
+    
+   return True
+

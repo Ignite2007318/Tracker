@@ -14,7 +14,8 @@ backend.daily_row_add()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
-page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" , "Update Phase Target" , "Phase Todo's" ] , key = "sidebar_radio")
+page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" ,
+                                    "Update Phase Target" , "Phase Todo's" , "Spaced Repetition" ] , key = "sidebar_radio")
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -182,11 +183,12 @@ if page == "Phase Todo's":
     system_setting = file_manager.load_data(x["system_setting"])
     current = system_setting['current']['current_phase']
 
-    st.title("Phase Todo's")
 
-    selected_value = st.radio("Select Mode" , ["Phase Mode" , "Edit Mode" , "Update Completed Todo"])
+    selected_value = st.sidebar.radio("Select Mode" , ["Phase Mode" , "Edit Mode" , "Update Completed Todo"])
 
     if selected_value == "Phase Mode":
+
+        st.title('Phase Mode')
 
         todos = st.text_area("Enter You'r Phase Todos")
         selected_phase = st.radio("Saving For", [f"Current Phase = {current}" , f"For Next Phase = {current+1}"])
@@ -201,6 +203,8 @@ if page == "Phase Todo's":
                 st.warning("There are not 10 days")
     
     if selected_value == "Edit Mode":
+
+        st.title("Edit Mode")
 
         col1 , col2 , col3 = st.columns(3)
         
@@ -229,7 +233,9 @@ if page == "Phase Todo's":
                  st.success("Added Successfully")
 
     if selected_value == "Update Completed Todo":
-        st.header('Update Phase Todo')
+
+        st.title('Update Phase Todo')
+        
         data, unique_days = backend.filter_phase_todo()
 
         updated_completion_status = {}
@@ -262,6 +268,61 @@ if page == "Phase Todo's":
             if value:
                 st.success('Saved Successfully')
 
+if page == "Spaced Repetition":
 
+    selected_value = st.sidebar.radio('Select Page' , ['Edit Page' , 'Updating Page'])
 
+    if selected_value == 'Edit Page':
+        st.header("Add Subject & Topic")
 
+        col1 , col2  = st.columns(2)
+
+        with col1:
+            subject = st.text_input("Enter The Subject")
+
+            clicked = st.button('Save' , key=1)
+
+            if clicked:
+                    x = backend.is_valid_topic_subject(subject)
+
+                    if x != True:
+                        st.warning(x)
+
+                    else:
+                        value = backend.check_subject_exist(subject)
+
+                        if value:
+                            st.success("Added")
+                        
+                        else:
+                            st.warning("Subject already exist")
+
+        with col2 :
+            subject_list = backend.subject_list()
+
+            if "Independent Topic" in subject_list:
+                pass
+
+            else:
+                subject_list.insert(0,'Independent Topic')
+
+            subject = st.selectbox("Select a Subject" , subject_list)
+        
+            topic = st.text_input("Enter The Topic")
+
+            clicked = st.button('Save' , key=2)
+
+            if clicked:
+                    x = backend.is_valid_topic_subject(topic)
+
+                    if x != True:
+                        st.warning(x)
+
+                    else:
+                        value = backend.check_topic_exist(subject , topic)
+
+                        if value:
+                            st.success("Added")
+
+                        else:
+                            st.warning('Topic alredy exist')

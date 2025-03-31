@@ -12,7 +12,8 @@ FILES = {
     "phase_target.csv": ["Phase", "Day" , 'Date'],
     "xp_points.csv": ["Phase" , "Day" , "Date"],
     "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed"],
-    "spaced_repetition.csv": ["Subject" , "Topic", "Sub-Topic", "Hardness", "Last_Revised", "Next_Revision"],
+    "spaced_repetition.csv": ["Subject", "Topic", "Sub Topic", "Hardness", "Last_Revised",
+                              "Next_Revision", "Interval", "Forgetting Rate", "Review Count", "Half Life", "Recall"],
     "habit_data.json" : {},
     "system_setting.json" : {}
 }
@@ -266,4 +267,11 @@ def save_to_csv_update(data , file_name):
     
     df.to_csv(file_path, index=False)
 
+def save_to_json(data , file_path):
 
+    file_path = os.path.join(DATA_FOLDER, file_path)
+
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=4)
+
+    return True
