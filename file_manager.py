@@ -12,8 +12,8 @@ FILES = {
     "phase_target.csv": ["Phase", "Day" , 'Date'],
     "xp_points.csv": ["Phase" , "Day" , "Date"],
     "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed"],
-    "spaced_repetition.csv": ["Subject", "Topic", "Sub Topic", "Hardness", "Last_Revised",
-                              "Next_Revision", "Interval", "Forgetting Rate", "Review Count", "Half Life", "Recall"],
+    "spaced_repetition.csv": ["Unique ID" , "Subject", "Topic", "Sub Topic",
+                               "Difficulty Status", "Next_Revision", "Review Count", "Note"],
     "habit_data.json" : {},
     "system_setting.json" : {}
 }
@@ -115,6 +115,7 @@ def add_today_if_empty(file_path_csv , file_path_json ,  today):
     data["current"]["start_date"] = today
     data["current"]["current_phase"] = 1
     data["current"]["current_day"] = 1
+    data["current"]["overall_current_day"] = 1
 
     with open(file_path_json , "w") as f:
         json.dump(data, f, indent=4)
@@ -144,6 +145,7 @@ def daily_file_row_add(csv_file , json_file , today):
 
     setting_json["current"]["current_phase"] = current_phase
     setting_json["current"]["current_day"] = current_day
+    setting_json["current"]["overall_current_day"] = ((current_phase - 1) * 10) + current_day
 
     new_row = {col: "NA" for col in daily_csv.columns}
     new_row["Date"] = today

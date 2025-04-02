@@ -270,9 +270,10 @@ if page == "Phase Todo's":
 
 if page == "Spaced Repetition":
 
-    selected_value = st.sidebar.radio('Select Page' , ['Edit Page' , 'Updating Page'])
+    selected_value = st.sidebar.radio('Select Page' , ['Add Subject & Topic' , 'Add for review'])
 
-    if selected_value == 'Edit Page':
+    if selected_value == 'Add Subject & Topic':
+
         st.header("Add Subject & Topic")
 
         col1 , col2  = st.columns(2)
@@ -326,3 +327,52 @@ if page == "Spaced Repetition":
 
                         else:
                             st.warning('Topic alredy exist')
+    
+    if selected_value == 'Add for review':
+        st.header('Add for review')
+
+        col1 , col2 , col3 = st.columns(3)
+
+        value = backend.subject_list()
+
+        if len(value) > 0:
+                with col1:
+                    subject = st.selectbox("Select a subject" , value)
+
+                with col2:
+                    topic_list = backend.topic_list(subject)
+                    topic = st.selectbox("Select a topic" , topic_list)
+
+                with col3:
+                    opt = ["Hard" , "Medium" , "Easy" , "Mastered" , "No need to review again"]
+                    difficulty_status = st.selectbox("Select current difficulty status" , opt)
+
+                    if difficulty_status == "Mastered":
+                        date_to_review = st.date_input('Enter date to review again')
+
+                    else :
+                        date_to_review = 0
+                    
+                col4 , col5 = st.columns(2)
+                
+                with col4:
+                    sub_topic = st.text_input("Enter sub topic", value = "No Subtopic")
+
+                    valid_subtopic = backend.is_valid_topic_subject(sub_topic)
+
+                    if valid_subtopic != True:
+                        st.warning(valid_subtopic)
+
+                    else: 
+                        clicked = st.button('Save')
+                        
+                with col5:
+                    note = st.text_area('Note')
+                
+                if clicked :
+                    value = backend.add_new_topic_review(subject , topic , difficulty_status , date_to_review , sub_topic , note)
+
+                    st.success('Saved')
+
+        else:
+            st.error("No subjects available. Please add a subject first!")

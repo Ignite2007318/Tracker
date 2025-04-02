@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 import json 
 import file_manager
-import datetime as dt  
+import datetime as dt
+from datetime import datetime, date
+import math
 
 x = file_manager.files_name()
 
@@ -53,7 +55,7 @@ def daily_row_add():
          file_manager.add_today_if_empty(x["daily"] ,  x["system_setting"] ,today_date())
 
       else :
-         y = value.tail(1)['Date'].values[0] == today_date() 
+         y = value.tail(1)['Date'].values[0] == today_date()
 
          if y == False:
             file_manager.daily_file_row_add(x["daily"] , x["system_setting"] , today_date())
@@ -255,6 +257,8 @@ def save_phase_todos(data):
 def check_subject_exist(subject):
    habit_data = file_manager.load_data(x["habit_data"])
 
+   habit_data.setdefault("subject_data", {})
+
    if subject in habit_data["subject_data"].keys():
       return False
    
@@ -263,6 +267,7 @@ def check_subject_exist(subject):
       return value
    
 def check_topic_exist(subject , topic):
+   save_subject_topic(subject)
    habit_data = file_manager.load_data(x["habit_data"])
 
    if topic in habit_data['subject_data'][subject]:
@@ -284,12 +289,13 @@ def save_subject_topic(new_subject, topics=None):
       else:
             habit_data["subject_data"][new_subject].append(topics)
 
-   file_manager.save_to_json(habit_data, x["habit_data"])  
+   file_manager.save_to_json(habit_data, x["habit_data"])
+
    return True
 
 
 def subject_list():
-   habit_data = file_manager.load_data(x["habit_data"]) or {}  
+   habit_data = file_manager.load_data(x["habit_data"])
 
    if "subject_data" in habit_data:
         return list(habit_data["subject_data"].keys())
@@ -311,4 +317,75 @@ def is_valid_topic_subject(s):
       return "Exceeds 60 characters."
     
    return True
+
+def topic_list(subject):
+
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   topic_list = habit_data['subject_data'][subject]
+
+
+   if len(topic_list) == 0:
+      topic_list.insert(0 , "Independent from topic")
+      return topic_list
+
+   else:
+      return topic_list 
+   
+def calculate_next_review_day (difficulty_status , date_to_review , current_day , review_count = 1 ):
+   
+   if difficulty_status == 'Hard':
+      return math.ceil(current_day + 1 + (review_count**1.75)) , review_count + 1
+
+   elif difficulty_status == 'Medium':
+      return math.ceil(current_day + 2 + (review_count**1.9)) , review_count + 1
+
+   elif difficulty_status == 'Easy':
+      return math.ceil(current_day + 3 + (review_count**2)) , review_count + 1
+
+   elif difficulty_status == "Mastered":
+      today = today_date()
+
+      today = datetime.strptime(today, "%Y-%m-%d").date()
+      difference = (date_to_review - today).days
+
+      return current_day + difference ,  review_count + 1
+   
+   else:
+      return 0 , review_count
+
+def add_new_topic_review(subject , topic, difficulty_status , date_to_review , sub_topic , note):
+   setting = file_manager.load_data(x['system_setting'])
+   spaced_repetation = file_manager.load_data(x["spaced_repetition"])
+
+   current_day = setting['current']['overall_current_day']
+
+   empty = file_manager.is_file_empty(x["spaced_repetition"])
+
+   if empty:
+      unique_id = 1
+
+   else:
+      unique_id = spaced_repetation['Unique ID'].max() + 1
+
+   next_review_day , review_count= calculate_next_review_day(difficulty_status , date_to_review , current_day)
+
+   new_row = []
+
+   new_row.append({
+      "Unique ID" : unique_id ,
+      "Subject" : subject,
+      "Topic" : topic,
+      "Sub Topic" : sub_topic,
+      "Difficulty Status" : difficulty_status,
+      "Next Revision" : next_review_day,
+      "Review Count" : review_count,
+      "Note" : note
+   })
+
+   value = file_manager.save_to_csv_append(new_row , x["spaced_repetition"])
+
+   return value
+   
+   
 
