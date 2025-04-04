@@ -11,6 +11,7 @@ st.set_page_config(layout="wide")
 x = file_manager.files_name()
 file_manager.check_data_folder()
 backend.daily_row_add()
+backend.revised_today_update()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
@@ -268,9 +269,12 @@ if page == "Phase Todo's":
             if value:
                 st.success('Saved Successfully')
 
+if "selected_topic" not in st.session_state:
+    st.session_state.selected_topic = None
+
 if page == "Spaced Repetition":
 
-    selected_value = st.sidebar.radio('Select Page' , ['Add Subject & Topic' , 'Add for review'])
+    selected_value = st.sidebar.radio('Select Page' , ['Add Subject & Topic' , 'Add for review' , "Today's Reviews"])
 
     if selected_value == 'Add Subject & Topic':
 
@@ -344,7 +348,7 @@ if page == "Spaced Repetition":
                     topic = st.selectbox("Select a topic" , topic_list)
 
                 with col3:
-                    opt = ["Hard" , "Medium" , "Easy" , "Mastered" , "No need to review again"]
+                    opt = ["Need Practice" , "Hard" , "Medium" , "Easy" , "Mastered" , "No need to review again"]
                     difficulty_status = st.selectbox("Select current difficulty status" , opt)
 
                     if difficulty_status == "Mastered":
@@ -367,7 +371,7 @@ if page == "Spaced Repetition":
                         clicked = st.button('Save')
                         
                 with col5:
-                    note = st.text_area('Note')
+                    note = st.text_area('Additional Notes' , max_chars= 1000)
                 
                 if clicked :
                     value = backend.add_new_topic_review(subject , topic , difficulty_status , date_to_review , sub_topic , note)
@@ -376,3 +380,98 @@ if page == "Spaced Repetition":
 
         else:
             st.error("No subjects available. Please add a subject first!")
+
+    if selected_value == "Today's Reviews":
+        topics , df , revised_list = backend.revise_topic_list()
+
+        if st.session_state.selected_topic:
+            u_id = st.session_state.selected_topic
+            df = df[df['Unique ID'] == u_id]
+            note = df['Note'].iloc[0]
+            
+            topic_title = next((key for key, value in topics.items() if value == u_id), None)
+            
+            st.title(f"Review : {topic_title}")
+
+            col1 , col2 , col3 = st.columns(3)
+
+            with col1:
+                col4 , col5 = st.columns(2)
+
+                with col4:
+                    total_revieww_count = df['Review Count'].iloc[0]
+                    st.metric("Review Count" , total_revieww_count)
+
+                with col5:
+                    next_review = df['Next Revision'].iloc[0]
+                    st.metric("Next Review" , f"Day : {next_review}")
+                
+            with col2:
+                st.subheader("Note")
+
+                if isinstance(note, float) and np.isnan(note):
+                       note = ""
+                else:
+                    note = str(note)
+
+                if "edit_note" not in st.session_state:
+                    st.session_state.edit_note = False
+
+                if st.session_state.edit_note:
+                    new_note = st.text_area("Edit Note", note, height=150, max_chars=1000)
+                    note = new_note
+                    
+                else:
+
+                    if note.strip() == "":
+                        st.info("No notes yet. Click below to add one.")
+
+                    else:
+                        st.write(note)
+
+                    if st.button("Edit Note"):
+                        st.session_state.edit_note = True
+                        st.rerun()
+
+            with col3:
+                opt = ["Need Practice" , "Hard" , "Medium" , "Easy" , "Mastered" , "No need to review again"]
+                option = ['Yes Reviewed' , 'Not Reviewed']
+
+                val = df[df['Unique ID'] == u_id]['Difficulty Status'].iloc[0]
+                index_pos = opt.index(val)
+
+                difficulty_status = st.selectbox('Select current difficulty status' , opt , index = index_pos)
+
+                if difficulty_status == 'Mastered':
+                    today = backend.today_date()
+                    next_review_day = st.date_input('Enter next review day' , min_value= today)
+
+                else:
+                    next_review_day = 0
+
+                if u_id not in revised_list:
+                    val = 1
+
+                else :
+                    val = 0
+
+                reviewed = st.radio("Reviewed" , option , val)
+
+                if st.button('Save Changes'):
+                    backend.spaced_review_changes(df , difficulty_status , next_review_day , reviewed , u_id , note)
+                    st.session_state.edit_note = False
+                    st.rerun()
+
+
+            if st.button("Back to Topic List"):
+                    st.session_state.selected_topic = None 
+                    st.rerun()
+
+        else:
+            st.title("Today's Topics to Review")
+
+            for topic in topics:
+                num = topics[topic]
+                if st.button(topic , key = num):
+                    st.session_state.selected_topic = num
+                    st.rerun()

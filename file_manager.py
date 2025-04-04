@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 import json
 
-
-
 DATA_FOLDER = "data"
 FILES = {
     "daily.csv": ["Phase" , "Day" , "Date" ],
@@ -13,7 +11,7 @@ FILES = {
     "xp_points.csv": ["Phase" , "Day" , "Date"],
     "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed"],
     "spaced_repetition.csv": ["Unique ID" , "Subject", "Topic", "Sub Topic",
-                               "Difficulty Status", "Next_Revision", "Review Count", "Note"],
+                               "Difficulty Status", "Next Revision", "Review Count", "Note"],
     "habit_data.json" : {},
     "system_setting.json" : {}
 }

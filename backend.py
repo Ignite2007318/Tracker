@@ -10,8 +10,8 @@ import math
 x = file_manager.files_name()
 
 def today_date():
- today_date = dt.datetime.today().strftime("%Y-%m-%d")
- return today_date
+   today_date = dt.datetime.today().strftime("%Y-%m-%d")
+   return today_date
 
 def add_habit_filter(new_habit, habit_type):
    
@@ -333,6 +333,9 @@ def topic_list(subject):
       return topic_list 
    
 def calculate_next_review_day (difficulty_status , date_to_review , current_day , review_count = 1 ):
+
+   if difficulty_status == 'Need Practice':
+      return math.ceil(current_day + 0 + (review_count**1.3)) , review_count + 1
    
    if difficulty_status == 'Hard':
       return math.ceil(current_day + 1 + (review_count**1.75)) , review_count + 1
@@ -387,5 +390,75 @@ def add_new_topic_review(subject , topic, difficulty_status , date_to_review , s
 
    return value
    
+def revised_today_update():
+   habit_data = file_manager.load_data(x["habit_data"])
+   system_setting = file_manager.load_data(x['system_setting'])
+   spaced_repetation = file_manager.load_data(x["spaced_repetition"])
+
+   overall_today = system_setting.get("current", {}).get("overall_current_day", 1)
+
+   uid_list = spaced_repetation[spaced_repetation['Next Revision'] == overall_today]['Unique ID'].tolist()
+
+   if "revised_today" not in habit_data:
+      habit_data['revised_today'] = {}
+
+      habit_data['revised_today']['today'] = today_date()
+      habit_data['revised_today']['revised_u_id'] = []
+      habit_data['revised_today']['need_to_revise_u_id'] = []
+
+      file_manager.save_to_json(habit_data , x["habit_data"])
+
+   if habit_data['revised_today']['today'] != today_date():
+
+      habit_data['revised_today']['today'] = today_date()
+      habit_data['revised_today']['revised_u_id'] = []
+      habit_data['revised_today']['need_to_revise_u_id'] = uid_list
+
+      file_manager.save_to_json(habit_data , x["habit_data"])
+
+def revise_topic_list():
+
+   spaced_repetition = file_manager.load_data(x["spaced_repetition"])
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   uid_list = habit_data["revised_today"]['need_to_revise_u_id']
+   need_to_revise = habit_data["revised_today"]['revised_u_id']
+   filtered_df = spaced_repetition[spaced_repetition['Unique ID'].isin(uid_list)]
+
+   today_topic = dict(zip(
+        (filtered_df['Subject'] + " - " + filtered_df['Topic'] + " - " + filtered_df['Sub Topic']).tolist(),
+        filtered_df['Unique ID'].tolist()
+    ))
+
+   return today_topic , filtered_df , need_to_revise
+
+def spaced_review_changes(df , difficulty_status , next_review_day , reviewed , u_id , note):
+   habit_data = file_manager.load_data(x["habit_data"])
+   spaced_repetation = file_manager.load_data(x["spaced_repetition"])
+   system_setting = file_manager.load_data(x['system_setting'])
+
+   index_row = spaced_repetation.index[spaced_repetation['Unique ID'] == u_id].tolist()
+   index_row = index_row[0]
+
+   review_count = df['Review Count'].iloc[0]
+   overall_today = system_setting.get("current", {}).get("overall_current_day", 1)
+   next_review_day , review_count= calculate_next_review_day(difficulty_status , next_review_day , overall_today , review_count)
+
+   spaced_repetation.at[index_row, 'Difficulty Status'] = difficulty_status
+   spaced_repetation.at[index_row, 'Note'] = note
+   spaced_repetation.at[index_row, 'Next Revision'] = next_review_day
+
+   if reviewed == "Yes Reviewed":
+      if u_id not in habit_data['revised_today']['revised_u_id']:
+         habit_data['revised_today']['revised_u_id'].append(u_id)
+
+         file_manager.save_to_json(habit_data , x["habit_data"])
+         spaced_repetation.at[index_row, 'Review Count'] = review_count
+
+
+
+
+   file_manager.save_to_csv_update(spaced_repetation , x["spaced_repetition"])
    
+
 
