@@ -60,6 +60,7 @@ def daily_row_add():
          if y == False:
             file_manager.daily_file_row_add(x["daily"] , x["system_setting"] , today_date())
             update_phase_target()
+            yes_no_xp_gain()
 
 def habit_update():
    df = file_manager.load_data(x["daily"])
@@ -371,12 +372,12 @@ def add_new_topic_review(subject , topic, difficulty_status , date_to_review , s
    else:
       unique_id = spaced_repetation['Unique ID'].max() + 1
 
-   next_review_day , review_count= calculate_next_review_day(difficulty_status , date_to_review , current_day)
+   next_review_day , review_count = calculate_next_review_day(difficulty_status , date_to_review , current_day)
 
    new_row = []
 
    new_row.append({
-      "Unique ID" : unique_id ,
+      "Unique ID" : unique_id,
       "Subject" : subject,
       "Topic" : topic,
       "Sub Topic" : sub_topic,
@@ -455,10 +456,40 @@ def spaced_review_changes(df , difficulty_status , next_review_day , reviewed , 
          file_manager.save_to_json(habit_data , x["habit_data"])
          spaced_repetation.at[index_row, 'Review Count'] = review_count
 
-
-
-
    file_manager.save_to_csv_update(spaced_repetation , x["spaced_repetition"])
+
+def yes_no_xp_gain():
+   system_setting = file_manager.load_data(x["system_setting"])
+   daily = file_manager.load_data(x["daily"])
+   habit_data = file_manager.load_data(x["habit_data"])
+   xp = file_manager.load_data(x["xp_points"])
+ 
+   phase = system_setting['current']['current_phase']
+   day = system_setting['current']['current_day']
+   today = today_date()
+
+   val = file_manager.is_file_empty(x["xp_points"])
+
+   if val:
+      new_row = []
+
+      new_row.append({
+         "Phase" : phase,
+         "Day" : day,
+         "Date" : today,
+         "XP Gained" : 0,
+         "XP Used" : 0,
+         "Total XP Avl" : 0
+      })
+
+      file_manager.save_to_csv_update(new_row , x['xp_points'])
+
+
+   if "journey_starts" in system_setting:
+      yes_no_habits = [key for key, value_type in habit_data['daily_habit'].items() if value_type == 'Yes/No']
+      total_yes = (daily[yes_no_habits].iloc[-2] == 1).sum()
+      
+      
    
 
 

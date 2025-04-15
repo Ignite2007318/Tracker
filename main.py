@@ -69,11 +69,18 @@ if page == "Habit Update":
             )
 
         elif habit_type == "Yes/No":
-            user_inputs[habit] = st.selectbox(
-                f"{habit} (Yes/No)", 
-                options=[None, "Yes", "No"], 
-                index=0 if current_val is None else ["Yes", "No"].index(current_val) + 1
+            if current_val == 1:
+                index_val = 0
+            else:
+                index_val = 1
+
+            user_choice = st.selectbox(
+                f"{habit} (Yes/No)",
+                options=["Yes", "No"],
+                index=index_val
             )
+
+            user_inputs[habit] = 1 if user_choice == "Yes" else 0
 
         elif "Range from 1 to 10" in habit_type:
             user_inputs[habit] = st.selectbox(

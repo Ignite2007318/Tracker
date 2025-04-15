@@ -8,7 +8,7 @@ DATA_FOLDER = "data"
 FILES = {
     "daily.csv": ["Phase" , "Day" , "Date" ],
     "phase_target.csv": ["Phase", "Day" , 'Date'],
-    "xp_points.csv": ["Phase" , "Day" , "Date"],
+    "xp_points.csv": ["Phase" , "Day" , "Date" , "XP Gained" , "XP Used" , "Total XP Avl"],
     "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed"],
     "spaced_repetition.csv": ["Unique ID" , "Subject", "Topic", "Sub Topic",
                                "Difficulty Status", "Next Revision", "Review Count", "Note"],
@@ -275,3 +275,9 @@ def save_to_json(data , file_path):
         json.dump(data, f, indent=4)
 
     return True
+
+def add_xp_point(xp_point):
+    xp = load_data(extract_file_names('xp_points'))
+    system_setting = load_data(extract_file_names('system_setting'))
+
+
