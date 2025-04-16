@@ -468,6 +468,8 @@ def yes_no_xp_gain():
    day = system_setting['current']['current_day']
    today = today_date()
 
+   row_to_calculate = daily.iloc[-2]
+
    val = file_manager.is_file_empty(x["xp_points"])
 
    if val:
@@ -484,12 +486,46 @@ def yes_no_xp_gain():
 
       file_manager.save_to_csv_update(new_row , x['xp_points'])
 
+   elif str(xp.iloc[-1]['Date']) != str(today):
+      
+      today_row = []
 
-   if "journey_starts" in system_setting:
-      yes_no_habits = [key for key, value_type in habit_data['daily_habit'].items() if value_type == 'Yes/No']
-      total_yes = (daily[yes_no_habits].iloc[-2] == 1).sum()
+      today_row.append({
+         "Phase" : phase,
+         "Day" : day,
+         "Date" : today,
+         "XP Gained" : 0,
+         "XP Used" :0,
+         "Total XP Avl":(xp['XP Gained'].sum()) - (xp['XP Used'].sum())
+      })
+
+      file_manager.save_to_csv_append(today_row , x["xp_points"])
+
+   else:
+      xp = file_manager.load_data(x["xp_points"])
+      if "journey_starts" in system_setting:
+         yes_no_habits = [key for key, value_type in habit_data['daily_habit'].items() if value_type == 'Yes/No']
+         total_yes = (row_to_calculate[yes_no_habits] == 1).sum()
+
+         if phase == 1 and day == 1:
+            return False
       
-      
-   
+         else:
+            row_to_update = xp.iloc[-1]
+
+            xp_gained = total_yes * 10
+
+            today_row = []
+            today_row.append({
+               "Phase" : row_to_update['Phase'],
+               "Day" : row_to_update['Day'],
+               "Date" : row_to_update['Date'],
+               "XP Gained" : xp_gained + row_to_update['XP Gained'],
+               "XP Used" :row_to_update['XP Used'],
+               "Total XP Avl":(xp['XP Gained'].sum()) - (xp['XP Used'].sum())
+            })
+
+            file_manager.save_to_csv_append(today_row , x["xp_points"])
+
 
 

@@ -250,6 +250,7 @@ def phase_target_update_row(today):
     return True
 
 def save_to_csv_append(data, file_name):
+    #appends new row
 
     data = pd.DataFrame(data)
 
@@ -260,6 +261,7 @@ def save_to_csv_append(data, file_name):
     return True
 
 def save_to_csv_update(data , file_name):
+    # this rewrite the intire file
 
     df = pd.DataFrame(data)
 
@@ -276,8 +278,5 @@ def save_to_json(data , file_path):
 
     return True
 
-def add_xp_point(xp_point):
-    xp = load_data(extract_file_names('xp_points'))
-    system_setting = load_data(extract_file_names('system_setting'))
 
 
