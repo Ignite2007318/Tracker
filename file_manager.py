@@ -9,7 +9,7 @@ FILES = {
     "daily.csv": ["Phase" , "Day" , "Date" ],
     "phase_target.csv": ["Phase", "Day" , 'Date'],
     "xp_points.csv": ["Phase" , "Day" , "Date" , "XP Gained" , "XP Used" , "Total XP Avl"],
-    "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed"],
+    "phases_todos.csv": ["Phase" , "Day" , "Task ID" , "Task Description" , "Completed" , "Get XP"],
     "spaced_repetition.csv": ["Unique ID" , "Subject", "Topic", "Sub Topic",
                                "Difficulty Status", "Next Revision", "Review Count", "Note"],
     "habit_data.json" : {},

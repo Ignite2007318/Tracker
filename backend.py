@@ -16,6 +16,7 @@ def some_basic_function():
       daily_row_add()
       revised_today_update()
       check_phase_change()
+      phase_todo_xp()
 
 def today_date():
    today_date = dt.datetime.today().strftime("%Y-%m-%d")
@@ -194,7 +195,8 @@ def add_phase_todo(todos , phase):
             "Day": Day,
             "Task ID": task_id, 
             "Task": task,  
-            "Completed": False
+            "Completed": False,
+            "Get XP" : False
         })
       task_id += 1
 
@@ -233,7 +235,9 @@ def edit_phase_todo(task , phase , day):
          "Day" : day,
          "Task ID" : task_id,
          "Task Description" : task,
-         "Completed" : False })
+         "Completed" : False,
+         "Get XP" : False
+      })
    
    value = file_manager.save_to_csv_append(tolist , x["phases_todos"])
 
@@ -617,14 +621,37 @@ def phase_target_xp_gain():
             "XP Used" : int(row['XP Used']),
             "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
          })
-      print(new_row)
 
       file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
 
+def phase_todo_xp():
+   xp = file_manager.load_data(x["xp_points"])
+   phase_todos = file_manager.load_data(x['phases_todos'])
+
+   task_list = phase_todos[(phase_todos["Completed"] == True) & (phase_todos["Get XP"] == False)]['Task ID'].to_list()
+
+   if len(task_list) > 0:
+
+      for i in task_list:
+         phase_todos.loc[phase_todos['Task ID'] == i, 'Get XP'] = True
+
+      total_xp = (len(task_list) * 10)
+      print(total_xp)
+
+      row = xp.iloc[-1]
+
+      new_row = []
+
+      new_row.append({
+            "Phase" : int(row['Phase']),
+            "Day" : int(row['Day']),
+            "Date" : row['Date'],
+            "XP Gained" : int(total_xp + row['XP Gained']),
+            "XP Used" : int(row['XP Used']),
+            "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
+         })
    
+      file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
+      file_manager.save_to_csv_update(phase_todos , x["phases_todos"])
       
-
-
-
-
 
