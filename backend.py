@@ -422,6 +422,8 @@ def revised_today_update():
       file_manager.save_to_json(habit_data , x["habit_data"])
 
    if habit_data['revised_today']['today'] != today_date():
+      space_repetation_xp()
+      not_revised()
 
       habit_data['revised_today']['today'] = today_date()
       habit_data['revised_today']['revised_u_id'] = []
@@ -524,19 +526,9 @@ def yes_no_xp_gain():
       else:
             row_to_update = xp.iloc[-1]
 
-            xp_gained = total_yes * 10
+            total_xp = total_yes * 10
 
-            today_row = []
-            today_row.append({
-               "Phase" : int(row_to_update['Phase']),
-               "Day" : int(row_to_update['Day']),
-               "Date" : row_to_update['Date'],
-               "XP Gained" : int(xp_gained + row_to_update['XP Gained']),
-               "XP Used" : int(row_to_update['XP Used']),
-               "Total XP Avl":int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
-            })
-
-            file_manager.update_last_row_in_csv(x['xp_points'] , today_row[0])
+            update_xp(total_xp)
 
 def new_phase_target_completion(habit):
    habit_data = file_manager.load_data(x["habit_data"])
@@ -576,7 +568,6 @@ def reset_phase_target_completion():
 def phase_target_xp_gain():
    phase_target = file_manager.load_data(x["phase_target"])
    habit_data = file_manager.load_data(x['habit_data'])
-   xp = file_manager.load_data(x["xp_points"])
 
    xp_target_list = phase_target.columns.tolist()[3:]
    last_row = phase_target.iloc[-1]
@@ -609,23 +600,9 @@ def phase_target_xp_gain():
          habit_data['habit_target_completion'][target] = completion
          file_manager.save_to_json(habit_data , x["habit_data"])
 
-      row = xp.iloc[-1]
-
-      new_row = []
-
-      new_row.append({
-            "Phase" : int(row['Phase']),
-            "Day" : int(row['Day']),
-            "Date" : row['Date'],
-            "XP Gained" : int(total_xp + row['XP Gained']),
-            "XP Used" : int(row['XP Used']),
-            "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
-         })
-
-      file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
+         update_xp(total_xp)
 
 def phase_todo_xp():
-   xp = file_manager.load_data(x["xp_points"])
    phase_todos = file_manager.load_data(x['phases_todos'])
 
    task_list = phase_todos[(phase_todos["Completed"] == True) & (phase_todos["Get XP"] == False)]['Task ID'].to_list()
@@ -636,22 +613,56 @@ def phase_todo_xp():
          phase_todos.loc[phase_todos['Task ID'] == i, 'Get XP'] = True
 
       total_xp = (len(task_list) * 10)
-      print(total_xp)
 
-      row = xp.iloc[-1]
+      update_xp(total_xp)
 
-      new_row = []
-
-      new_row.append({
-            "Phase" : int(row['Phase']),
-            "Day" : int(row['Day']),
-            "Date" : row['Date'],
-            "XP Gained" : int(total_xp + row['XP Gained']),
-            "XP Used" : int(row['XP Used']),
-            "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
-         })
-   
-      file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
       file_manager.save_to_csv_update(phase_todos , x["phases_todos"])
-      
+
+def update_xp(total_xp , used_xp = 0):
+   xp = file_manager.load_data(x["xp_points"])
+   row = xp.iloc[-1]
+
+   new_row = []
+
+   new_row.append({
+         "Phase" : int(row['Phase']),
+         "Day" : int(row['Day']),
+         "Date" : row['Date'],
+         "XP Gained" : int(total_xp + row['XP Gained']),
+         "XP Used" : int(row['XP Used'] + used_xp),
+         "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
+      })
+   
+   file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
+
+def space_repetation_xp():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   total_xp = len(habit_data["revised_today"]["revised_u_id"]) * 15
+   update_xp(total_xp)
+
+def not_revised():
+   habit_data = file_manager.load_data(x["habit_data"])
+   spaced_repetation = file_manager.load_data(x["spaced_repetition"])
+
+   should = habit_data['revised_today']['need_to_revise_u_id']
+   revised = habit_data['revised_today']['revised_u_id']
+
+   u_id = np.setdiff1d(should , revised)
+   
+   if len(u_id) > 0:
+      for i in u_id:
+            index_row = spaced_repetation.index[spaced_repetation['Unique ID'] == i].tolist()
+            index_row = index_row[0]
+
+            spaced_repetation.at[index_row, 'Next Revision'] = (spaced_repetation.at[index_row, 'Next Revision'] + 3)
+
+      total_xp = len(u_id) * (-10)
+      update_xp(total_xp)
+      file_manager.save_to_csv_update(spaced_repetation , x["spaced_repetition"])
+
+
+
+   
+
 
