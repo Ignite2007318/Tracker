@@ -10,8 +10,7 @@ st.set_page_config(layout="wide")
 
 x = file_manager.files_name()
 file_manager.check_data_folder()
-backend.daily_row_add()
-backend.revised_today_update()
+backend.some_basic_function()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
@@ -107,6 +106,7 @@ if page == "Habit Update":
 
         if value == True:
             backend.update_phase_target()
+            backend.phase_target_xp_gain()
             st.success("Successfully Added")
 
 if page == "Default":
@@ -142,18 +142,19 @@ if page == "Phase Target":
     current_habit = st.selectbox("Select a Habit",time_based_habits + numeric_habits)
 
     if current_habit in time_based_habits:
-       value =  st.number_input("Time in Hours" , min_value= 0 , step=1)
+       value =  st.number_input("Time in Hours" , min_value= 1 , step=1)
        st.write("Habit : {} , Target : {} Hours".format(current_habit , value))
        value *= 60
 
     else :
-        value =  st.number_input("Enter a Numeric Value" , min_value= 0.0 , step= 0.1)
+        value =  st.number_input("Enter a Numeric Value" , min_value= 1.0 , step= 0.1)
         st.write("Habit : {} , Target : {}".format(current_habit , value))
 
     clicked = st.button("Save")
 
     if clicked == True:
         value = file_manager.add_new_phase_target(current_habit , value)
+        backend.new_phase_target_completion(current_habit)
 
         if value:
             st.success("Succesfully Added")
@@ -171,12 +172,12 @@ if page == "Update Phase Target":
     default_value = habit_target[selected_habit]
     
     if value == "Time":
-        new_input = st.number_input("Enter New Target In Hours(Current Target is Given as default)" , min_value = 0 , step=1 , value=default_value//60)
+        new_input = st.number_input("Enter New Target In Hours(Current Target is Given as default)" , min_value = 1 , step=1 , value=default_value//60)
         st.text("Habit to update : {} | New Target : {} Hours".format(selected_habit , new_input))
         new_input *= 60
 
     else:
-        new_input = st.number_input("Enter New Target(Current Target is Given as default)" , min_value = 0.0 , step=0.1 , value=default_value)
+        new_input = st.number_input("Enter New Target(Current Target is Given as default)" , min_value = 1.0 , step=0.1 , value=default_value)
         st.text("Habit to update : {} | New Target : {}".format(selected_habit , new_input))
 
     clicked = st.button("Save")

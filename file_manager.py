@@ -138,7 +138,7 @@ def daily_file_row_add(csv_file , json_file , today):
     current_day += 1 
 
     if current_day > 10 :
-        current_phase += 1 
+        current_phase += 1
         current_day = 1
 
     setting_json["current"]["current_phase"] = current_phase
@@ -277,6 +277,20 @@ def save_to_json(data , file_path):
         json.dump(data, f, indent=4)
 
     return True
+
+def update_last_row_in_csv(file_path, new_row_dict):
+    df = load_data(file_path)
+
+    for col in df.columns:
+        if col not in new_row_dict:
+            new_row_dict[col] = None 
+
+    df.iloc[-1] = pd.Series(new_row_dict)[df.columns]
+
+    file_path = f"data/{file_path}"
+    df.to_csv(file_path, index=False)
+
+
 
 
 

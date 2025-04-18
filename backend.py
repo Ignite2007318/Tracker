@@ -9,6 +9,14 @@ import math
 
 x = file_manager.files_name()
 
+def some_basic_function():
+   system_setting = file_manager.load_data(x["system_setting"])
+
+   if "journey_starts" in system_setting:
+      daily_row_add()
+      revised_today_update()
+      check_phase_change()
+
 def today_date():
    today_date = dt.datetime.today().strftime("%Y-%m-%d")
    return today_date
@@ -27,15 +35,15 @@ def add_habit_filter(new_habit, habit_type):
    
 def add_default(user_name):
    
-    default_habits = {
+   default_habits = {
      "Wake up Time": "Time",
      "Exercise/Workout": "Yes/No",
      "Screen Time": "Time",
      "Study Time": "Time",
-}
-    file_path = x["system_setting"]
+   }
+   file_path = x["system_setting"]
  
-    for habit_name in default_habits:
+   for habit_name in default_habits:
 
       habit_type = default_habits[habit_name] 
       add_habit_filter(habit_name , habit_type)
@@ -462,7 +470,6 @@ def yes_no_xp_gain():
    system_setting = file_manager.load_data(x["system_setting"])
    daily = file_manager.load_data(x["daily"])
    habit_data = file_manager.load_data(x["habit_data"])
-   xp = file_manager.load_data(x["xp_points"])
  
    phase = system_setting['current']['current_phase']
    day = system_setting['current']['current_day']
@@ -486,7 +493,8 @@ def yes_no_xp_gain():
 
       file_manager.save_to_csv_update(new_row , x['xp_points'])
 
-   elif str(xp.iloc[-1]['Date']) != str(today):
+   xp = file_manager.load_data(x["xp_points"])
+   if str(xp.iloc[-1]['Date']) != str(today):
       
       today_row = []
 
@@ -501,31 +509,122 @@ def yes_no_xp_gain():
 
       file_manager.save_to_csv_append(today_row , x["xp_points"])
 
-   else:
+   if "journey_starts" in system_setting:
       xp = file_manager.load_data(x["xp_points"])
-      if "journey_starts" in system_setting:
-         yes_no_habits = [key for key, value_type in habit_data['daily_habit'].items() if value_type == 'Yes/No']
-         total_yes = (row_to_calculate[yes_no_habits] == 1).sum()
+      yes_no_habits = [key for key, value_type in habit_data['daily_habit'].items() if value_type == 'Yes/No']
+      total_yes = (row_to_calculate[yes_no_habits] == 1).sum()
 
-         if phase == 1 and day == 1:
-            return False
+      if phase == 1 and day == 1:
+         return False
       
-         else:
+      else:
             row_to_update = xp.iloc[-1]
 
             xp_gained = total_yes * 10
 
             today_row = []
             today_row.append({
-               "Phase" : row_to_update['Phase'],
-               "Day" : row_to_update['Day'],
+               "Phase" : int(row_to_update['Phase']),
+               "Day" : int(row_to_update['Day']),
                "Date" : row_to_update['Date'],
-               "XP Gained" : xp_gained + row_to_update['XP Gained'],
-               "XP Used" :row_to_update['XP Used'],
-               "Total XP Avl":(xp['XP Gained'].sum()) - (xp['XP Used'].sum())
+               "XP Gained" : int(xp_gained + row_to_update['XP Gained']),
+               "XP Used" : int(row_to_update['XP Used']),
+               "Total XP Avl":int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
             })
 
-            file_manager.save_to_csv_append(today_row , x["xp_points"])
+            file_manager.update_last_row_in_csv(x['xp_points'] , today_row[0])
+
+def new_phase_target_completion(habit):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if "habit_target_completion" not in habit_data:
+      habit_data['habit_target_completion'] = {}
+
+   if habit not in habit_data['habit_target_completion']:
+      habit_data['habit_target_completion'][habit] = 0
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
+
+def check_phase_change():
+   daily = file_manager.load_data(x['daily'])
+   system_setting = file_manager.load_data(x["system_setting"])
+
+   if "last_reset_phase" not in system_setting["current"]:
+      system_setting["current"]['last_reset_phase'] = 1
+      file_manager.save_to_json(system_setting , x["system_setting"])
+
+   else:
+      if daily.shape[0] > 1:
+         if daily.iloc[-1]['Phase'] != system_setting["current"]['last_reset_phase'] and daily.iloc[-1]['Day'] == 1:
+            system_setting["current"]['last_reset_phase'] = system_setting["current"]['current_phase']
+            reset_phase_target_completion()
+            file_manager.save_to_json(system_setting , x["system_setting"])
+
+def reset_phase_target_completion():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if "habit_target_completion" in habit_data:
+      for habit in habit_data['habit_target_completion']:
+         habit_data['habit_target_completion'][habit] = 0
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
+
+def phase_target_xp_gain():
+   phase_target = file_manager.load_data(x["phase_target"])
+   habit_data = file_manager.load_data(x['habit_data'])
+   xp = file_manager.load_data(x["xp_points"])
+
+   xp_target_list = phase_target.columns.tolist()[3:]
+   last_row = phase_target.iloc[-1]
+
+   total_xp = 0
+
+   val = file_manager.is_file_empty(x["xp_points"])
+
+   if val != True:
+
+      for target in xp_target_list:
+         value = last_row[target]
+         overall_target = habit_data['phase_target'][target]
+
+         if pd.isna(value):
+            value = 0
+      
+         if overall_target == 0:
+            overall_target = 1
+
+         completion = int((value / overall_target) * 100)
+         last_completion_rate = habit_data['habit_target_completion'][target]
+
+         if last_completion_rate < 101:
+            total_xp += ((completion - last_completion_rate) * 4)
+
+         else:
+            total_xp += ((completion - last_completion_rate) * 2)
+
+         habit_data['habit_target_completion'][target] = completion
+         file_manager.save_to_json(habit_data , x["habit_data"])
+
+      row = xp.iloc[-1]
+
+      new_row = []
+
+      new_row.append({
+            "Phase" : int(row['Phase']),
+            "Day" : int(row['Day']),
+            "Date" : row['Date'],
+            "XP Gained" : int(total_xp + row['XP Gained']),
+            "XP Used" : int(row['XP Used']),
+            "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
+         })
+      print(new_row)
+
+      file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
+
+   
+      
+
+
 
 
 
