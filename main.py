@@ -4,18 +4,18 @@ import backend
 import pandas
 import numpy as np
 import streamlit as st
-from datetime import time
+from datetime import time , date , timedelta
 
 st.set_page_config(layout="wide")
 
 x = file_manager.files_name()
 file_manager.check_data_folder()
-backend.some_basic_function()
+holiday_val = backend.some_basic_function()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
 page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" ,
-                                    "Update Phase Target" , "Phase Todo's" , "Spaced Repetition" ] , key = "sidebar_radio")
+                                    "Update Phase Target" , "Phase Todo's" , "Spaced Repetition" , "XP and Reward"] , key = "sidebar_radio")
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -47,6 +47,11 @@ if page == "Add Habit":
 
 if page == "Habit Update":
     st.title("Habit Update")
+
+    if holiday_val == False:
+        st.warning("Today is a holiday. Habit tracking is disabled.")
+        st.stop()
+
     dict = backend.habit_update()
 
     user_inputs = {}
@@ -482,4 +487,72 @@ if page == "Spaced Repetition":
                 num = topics[topic]
                 if st.button(topic , key = num):
                     st.session_state.selected_topic = num
+                    st.rerun()
+
+if page == "XP and Reward":
+    page = st.sidebar.radio("Sidebar Navigation",["Add Holiday & Reward" , "Claim Reward"])
+
+    today = date.today()
+
+    if today.month == 12:
+        next_month = today.replace(year=today.year + 1, month=1, day=1)
+
+    else:
+        next_month = today.replace(month=today.month + 1, day=1)
+    
+    if page == "Add Holiday & Reward":
+        length , day_free , total_xp_avl  , total_length = backend.holiday_len()
+
+        col1 , col2 = st.columns(2)
+
+        with col1:
+            holiday = []
+
+            if length == 0 or length < 4:
+                st.header("Confirmed Holidays")
+                for date in day_free:
+                    st.text(date)
+                st.markdown("---")
+
+            if length > 0:
+                st.header('Add Holiday')
+                counter = 0
+
+                while counter != length:
+                    holiday_date = st.date_input("Select Date",
+                                             value= next_month - timedelta(1),
+                                             min_value= today.replace(day = 1),
+                                             max_value=next_month - timedelta(1),
+                                             key = counter)
+                    counter += 1
+                    holiday.append(holiday_date)
+
+                if st.button('Save'):
+                    backend.save_holiday(holiday)
+                    st.rerun()
+
+            if total_length == 4 and total_xp_avl > 800:
+                st.header("XP Holiday (Need 800 XP)")
+                holiday_date = st.date_input("Select Date",
+                                             value= next_month - timedelta(1),
+                                             min_value= today.replace(day = 1),
+                                             max_value=next_month - timedelta(1),
+                                             )
+                
+                if st.button('Save'):
+                    backend.save_holiday([holiday_date])
+                    backend.update_xp(used_xp=800)
+                    st.rerun()
+
+            if total_length == 5 and total_xp_avl > 800:
+                st.header("XP Holiday (Need 800 XP)")
+                holiday_date = st.date_input("Select Date",
+                                             value= next_month - timedelta(1),
+                                             min_value= today.replace(day = 1),
+                                             max_value=next_month - timedelta(1),
+                                             )
+                
+                if st.button('Save'):
+                    backend.save_holiday([holiday_date])
+                    backend.update_xp(used_xp=800)
                     st.rerun()

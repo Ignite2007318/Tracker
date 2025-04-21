@@ -13,11 +13,31 @@ def some_basic_function():
    system_setting = file_manager.load_data(x["system_setting"])
 
    if "journey_starts" in system_setting:
-      daily_row_add()
-      revised_today_update()
-      check_phase_change()
-      phase_todo_xp()
+      check_current_month()
 
+      val = check_holiday()
+
+      if val:
+         daily_row_add()
+         revised_today_update()
+         check_phase_change()
+         phase_todo_xp()
+         return True
+
+      else:
+         return False
+
+def check_holiday():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   today = today_date()
+
+   if today in habit_data["holiday_list"]:
+      return False
+   
+   else:
+      return True
+   
 def today_date():
    today_date = dt.datetime.today().strftime("%Y-%m-%d")
    return today_date
@@ -31,6 +51,7 @@ def add_habit_filter(new_habit, habit_type):
 
    if value == True:
       return True
+   
    else :
       return "Habit Alredy Exist"
    
@@ -219,8 +240,14 @@ def edit_phase_todo(task , phase , day):
 
    phases_todo = file_manager.load_data(x["phases_todos"])
 
-   last_row = phases_todo.iloc[-1]
-   task_id = last_row["Task ID"] + 1
+   empty = file_manager.is_file_empty(x["phases_todos"])
+
+   if empty:
+      task_id = 1
+
+   else:
+      last_row = phases_todo.iloc[-1]
+      task_id = last_row["Task ID"] + 1
 
    phase = int(phase[-1])
 
@@ -500,6 +527,7 @@ def yes_no_xp_gain():
       file_manager.save_to_csv_update(new_row , x['xp_points'])
 
    xp = file_manager.load_data(x["xp_points"])
+
    if str(xp.iloc[-1]['Date']) != str(today):
       
       today_row = []
@@ -524,8 +552,6 @@ def yes_no_xp_gain():
          return False
       
       else:
-            row_to_update = xp.iloc[-1]
-
             total_xp = total_yes * 10
 
             update_xp(total_xp)
@@ -618,7 +644,7 @@ def phase_todo_xp():
 
       file_manager.save_to_csv_update(phase_todos , x["phases_todos"])
 
-def update_xp(total_xp , used_xp = 0):
+def update_xp(total_xp = 0 , used_xp = 0):
    xp = file_manager.load_data(x["xp_points"])
    row = xp.iloc[-1]
 
@@ -661,8 +687,61 @@ def not_revised():
       update_xp(total_xp)
       file_manager.save_to_csv_update(spaced_repetation , x["spaced_repetition"])
 
+def check_current_month():
+   habit_data = file_manager.load_data(x["habit_data"])
+   system_setting = file_manager.load_data(x["system_setting"])
 
+   now = datetime.now()
+   current_month = now.month
 
-   
+   if "current_month" not in system_setting:
+     system_setting["current_month"] = current_month
+     habit_data["holiday_list"] = []
 
+     file_manager.save_to_json(system_setting , x['system_setting'])
+     file_manager.save_to_json(habit_data , x["habit_data"])
 
+   else:
+
+      if system_setting["current_month"] == current_month:
+         return 
+      
+      else :
+         habit_data["holiday_list"] = []
+         system_setting["current_month"] = current_month
+         file_manager.save_to_json(habit_data , x['habit_data'])
+         file_manager.save_to_json(system_setting , x['system_setting'])
+
+def holiday_len():
+   habit_data = file_manager.load_data(x['habit_data'])
+   xp_points_avl = file_manager.load_data(x["xp_points"])
+
+   if xp_points_avl.shape[0] > 0:
+      total_xp = xp_points_avl.iloc[-1]["Total XP Avl"]
+
+   else:
+      total_xp = 0
+
+   holiday_list = habit_data["holiday_list"]
+
+   total_length = len(holiday_list)
+
+   length =  4 - len(holiday_list)
+
+   return length , holiday_list , total_xp , total_length
+
+def save_holiday(holiday_list):
+   habit_data = file_manager.load_data(x['habit_data'])
+  
+   holiday_list = [d.isoformat() for d in holiday_list]
+
+   holiday = habit_data["holiday_list"]
+
+   for i in holiday_list:
+      holiday.append(i)
+
+   unique_holiday = list(set(holiday))
+
+   habit_data["holiday_list"] = unique_holiday
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
