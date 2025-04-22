@@ -18,6 +18,7 @@ def some_basic_function():
       val = check_holiday()
 
       if val:
+         daily_reward_reset()
          daily_row_add()
          revised_today_update()
          check_phase_change()
@@ -745,3 +746,72 @@ def save_holiday(holiday_list):
    habit_data["holiday_list"] = unique_holiday
 
    file_manager.save_to_json(habit_data , x["habit_data"])
+
+def add_new_reward(reward , reward_xp):
+   habit_data = file_manager.load_data(x['habit_data'])
+
+   if "reward" not in habit_data:
+      habit_data["reward"] = {}
+
+   
+   habit_data["reward"][reward] = {}
+   habit_data["reward"][reward]["Claimed"] = False
+   habit_data["reward"][reward]["XP"] = reward_xp
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
+
+def daily_reward_reset():
+   daily = file_manager.load_data(x["daily"])
+   habit_data = file_manager.load_data(x['habit_data'])
+
+   if daily.shape[0] > 1:
+      date_to_check = daily.iloc[-1]['Date']
+
+      if date_to_check != today_date():
+         for i in habit_data['reward']:
+            habit_data['reward'][i]['Claimed'] = False
+      
+         file_manager.save_to_json(habit_data , x["habit_data"])
+
+      else:
+         pass
+
+def unlock_reward_prerequisites():
+   habit_data = file_manager.load_data(x["habit_data"])
+   xp = file_manager.load_data(x["xp_points"])
+
+   true_list = []
+   false_dict = {}
+
+   for i in habit_data['reward']:
+
+      if habit_data['reward'][i]['Claimed'] == True:
+         true_list.append(i)
+
+      else:
+         false_dict[i] = habit_data['reward'][i]
+
+   if xp.shape[0] > 0:
+      total_xp = xp.iloc[-1]["Total XP Avl"]
+
+   else:
+      total_xp = 0
+   
+   if xp.shape[0] >= 2:
+      xp_change = int(xp.iloc[-1]["Total XP Avl"]) - int(xp.iloc[-2]["Total XP Avl"])
+
+   else:
+      xp_change = 0
+
+   holiday_list = habit_data["holiday_list"]
+
+   return true_list , false_dict , total_xp , holiday_list , xp_change
+
+def unlocked_reward(reward_list):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   for i in reward_list:
+      habit_data['reward'][i]['Claimed'] = True
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
+

@@ -5,6 +5,7 @@ import pandas
 import numpy as np
 import streamlit as st
 from datetime import time , date , timedelta
+import time as t
 
 st.set_page_config(layout="wide")
 
@@ -490,7 +491,7 @@ if page == "Spaced Repetition":
                     st.rerun()
 
 if page == "XP and Reward":
-    page = st.sidebar.radio("Sidebar Navigation",["Add Holiday & Reward" , "Claim Reward"])
+    page = st.sidebar.radio("Sidebar Navigation",["Add Holiday & Reward" , "Unlock Reward"])
 
     today = date.today()
 
@@ -556,3 +557,64 @@ if page == "XP and Reward":
                     backend.save_holiday([holiday_date])
                     backend.update_xp(used_xp=800)
                     st.rerun()
+                
+        with col2:
+            reward = st.text_input("Enter Reward")
+            reward_xp = st.number_input("Enter XP (>= 200)" , min_value=200 , step=1)
+
+            reward_name = reward.strip()
+            clicked = st.button('Save' , disabled = not reward_name ,key=reward_name)
+
+            if clicked:
+                backend.add_new_reward(reward , reward_xp)
+                st.success('Reward Added')
+                t.sleep(2)
+                st.rerun()
+
+    if page == "Unlock Reward":
+        st.header('Unlock Reward')
+
+        true_list , false_dict , total_xp , holiday_list , xp_change = backend.unlock_reward_prerequisites()
+
+        st.metric('Current Total XP' , total_xp , delta=xp_change)
+
+        if len(true_list) > 0:
+            st.subheader('Claimed')
+
+            for i in true_list:
+                text = "✅ {}".format(i)
+                st.text(text)
+
+        if len(false_dict) > 0:
+            st.subheader('Claim Your Rewards')
+            
+            claimed_list = []
+            xp_using = 0
+
+            for i in false_dict:
+                x = st.checkbox("{} | XP Need : {} ".format(i , false_dict[i]["XP"]), value=False)
+
+                if x :
+                    claimed_list.append(i)
+                    xp_using += false_dict[i]['XP']
+
+            st.metric("Total XP of Selected Rewards" , xp_using)
+
+            if len(claimed_list) > 0 and xp_using > total_xp:
+
+                extra_xp = xp_using - total_xp
+                st.warning("Not Enoughf XP {} more then current total XP".format(extra_xp))
+
+            else:
+                if len(claimed_list) == 0 :
+                    st.warning('Nothing is selected yet')
+
+                else:
+                    if st.button('Save'):
+                        backend.update_xp(used_xp= xp_using)
+                        backend.unlocked_reward(claimed_list)
+                        st.rerun()
+
+                
+
+            
