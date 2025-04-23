@@ -626,9 +626,9 @@ def phase_target_xp_gain():
             total_xp += ((completion - last_completion_rate) * 2)
 
          habit_data['habit_target_completion'][target] = completion
-         file_manager.save_to_json(habit_data , x["habit_data"])
+      file_manager.save_to_json(habit_data , x["habit_data"])
 
-         update_xp(total_xp)
+      update_xp(total_xp)
 
 def phase_todo_xp():
    phase_todos = file_manager.load_data(x['phases_todos'])
