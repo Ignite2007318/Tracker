@@ -23,7 +23,6 @@ def some_basic_function():
          revised_today_update()
          check_phase_change()
          phase_todo_xp()
-         update_xp()
          return True
 
       else:
