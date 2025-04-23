@@ -23,6 +23,7 @@ def some_basic_function():
          revised_today_update()
          check_phase_change()
          phase_todo_xp()
+         update_xp()
          return True
 
       else:
@@ -647,20 +648,42 @@ def phase_todo_xp():
 
 def update_xp(total_xp = 0 , used_xp = 0):
    xp = file_manager.load_data(x["xp_points"])
-   row = xp.iloc[-1]
+   system_setting = file_manager.load_data(x["system_setting"])
 
-   new_row = []
+   phase = system_setting['current']['current_phase']
+   day = system_setting['current']['current_day']
 
-   new_row.append({
-         "Phase" : int(row['Phase']),
-         "Day" : int(row['Day']),
-         "Date" : row['Date'],
-         "XP Gained" : int(total_xp + row['XP Gained']),
-         "XP Used" : int(row['XP Used'] + used_xp),
-         "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
-      })
+   val = file_manager.is_file_empty(x["xp_points"])
+
+   if val != True:
+      row = xp.iloc[-1]
+
+      new_row = []
+
+      new_row.append({
+            "Phase" : int(row['Phase']),
+            "Day" : int(row['Day']),
+            "Date" : row['Date'],
+            "XP Gained" : int(total_xp + row['XP Gained']),
+            "XP Used" : int(row['XP Used'] + used_xp),
+            "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
+         })
    
-   file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
+      file_manager.update_last_row_in_csv(x['xp_points'] , new_row[0])
+
+   else: 
+      new_row = []
+
+      new_row.append({
+            "Phase" : phase,
+            "Day" : day,
+            "Date" : today_date(),
+            "XP Gained" : 0,
+            "XP Used" : 0,
+            "Total XP Avl": int((xp['XP Gained'].sum()) - (xp['XP Used'].sum()))
+         })
+   
+      file_manager.save_to_csv_append(new_row , x["xp_points"])
 
 def space_repetation_xp():
    habit_data = file_manager.load_data(x["habit_data"])
