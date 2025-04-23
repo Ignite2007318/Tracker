@@ -88,10 +88,11 @@ if page == "Habit Update":
             user_inputs[habit] = 1 if user_choice == "Yes" else 0
 
         elif "Range from 1 to 10" in habit_type:
+            default_index = 4 if current_val is None else list(range(1, 11)).index(current_val)
             user_inputs[habit] = st.selectbox(
                 f"{habit} (Range 1-10)", 
-                options=[None] + list(range(1, 11)), 
-                index=0 if current_val is None else list(range(1, 11)).index(current_val) + 1
+                options = list(range(1, 11)), 
+                index = default_index
             )
 
         elif habit_type == "Time":
@@ -559,6 +560,7 @@ if page == "XP and Reward":
                     st.rerun()
                 
         with col2:
+            st.subheader('Add Reward')
             reward = st.text_input("Enter Reward")
             reward_xp = st.number_input("Enter XP (>= 200)" , min_value=200 , step=1)
 
@@ -570,6 +572,27 @@ if page == "XP and Reward":
                 st.success('Reward Added')
                 t.sleep(2)
                 st.rerun()
+
+            st.subheader('Update Reward XP')
+            reward_dict = backend.update_reward_xp()
+
+            reward = st.selectbox('Select an Reward' , reward_dict.keys())
+            new_xp = st.number_input('Enter new XP' , step=1 , value= reward_dict[reward])
+
+            if new_xp >= 200:
+                key = f"save_button_{reward}"
+                click = st.button('Save', key=key)
+    
+                if click:
+                    backend.add_new_reward(reward, new_xp)
+                    st.success('XP Updated')
+                    t.sleep(2)
+                    st.rerun()
+
+            else:
+               st.warning('XP is smaller than 200')
+
+            
 
     if page == "Unlock Reward":
         st.header('Unlock Reward')

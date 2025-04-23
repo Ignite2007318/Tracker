@@ -23,6 +23,7 @@ def some_basic_function():
          revised_today_update()
          check_phase_change()
          phase_todo_xp()
+         update_xp()
          return True
 
       else:
@@ -553,7 +554,7 @@ def yes_no_xp_gain():
          return False
       
       else:
-            total_xp = total_yes * 10
+            total_xp = total_yes * 5
 
             update_xp(total_xp)
 
@@ -814,4 +815,16 @@ def unlocked_reward(reward_list):
       habit_data['reward'][i]['Claimed'] = True
 
    file_manager.save_to_json(habit_data , x["habit_data"])
+
+def update_reward_xp():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   reward_dict = {}
+   if "reward" in habit_data:
+      for i in habit_data['reward']:
+         reward_dict[i] = habit_data['reward'][i]['XP']
+
+   return reward_dict
+   
+
 
