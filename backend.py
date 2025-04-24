@@ -100,6 +100,11 @@ def habit_update():
 
    col = df.columns
 
+   val = file_manager.is_file_empty(x["daily"])
+
+   if val :
+      return False
+   
    today = df[df['Date'] == today_date()]
    today = today.iloc[0]
 
@@ -149,10 +154,14 @@ def get_phase_target_habit():
 def update_phase_target_list():
    data = file_manager.load_data(x['habit_data'])
 
-   habit_target = data['phase_target']
-   habit_type = data['daily_habit']
+   if 'phase_target' not in data:
+      return False
 
-   return habit_target , habit_type
+   else:
+      habit_target = data['phase_target']
+      habit_type = data['daily_habit']
+
+      return habit_target , habit_type
 
 def update_phase_target():
    file_manager.phase_target_update_row(today_date())
@@ -465,6 +474,9 @@ def revise_topic_list():
    spaced_repetition = file_manager.load_data(x["spaced_repetition"])
    habit_data = file_manager.load_data(x["habit_data"])
 
+   if 'revised_today' not in habit_data:
+      return False
+   
    uid_list = habit_data["revised_today"]['need_to_revise_u_id']
    need_to_revise = habit_data["revised_today"]['revised_u_id']
    filtered_df = spaced_repetition[spaced_repetition['Unique ID'].isin(uid_list)]
@@ -745,7 +757,9 @@ def holiday_len():
 
    else:
       total_xp = 0
-
+   if 'holiday_list' not in habit_data:
+      return False
+   
    holiday_list = habit_data["holiday_list"]
 
    total_length = len(holiday_list)
@@ -806,6 +820,9 @@ def unlock_reward_prerequisites():
    true_list = []
    false_dict = {}
 
+   if 'reward' not in habit_data:
+      return False
+   
    for i in habit_data['reward']:
 
       if habit_data['reward'][i]['Claimed'] == True:
@@ -847,6 +864,3 @@ def update_reward_xp():
          reward_dict[i] = habit_data['reward'][i]['XP']
 
    return reward_dict
-   
-
-

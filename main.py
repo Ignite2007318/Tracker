@@ -47,11 +47,17 @@ if page == "Add Habit":
             st.warning(x)
 
 if page == "Habit Update":
-    st.title("Habit Update")
-
     if holiday_val == False:
         st.warning("Today is a holiday. Habit tracking is disabled.")
         st.stop()
+
+    val = backend.habit_update()
+
+    if val == False:
+        st.warning('Go to default and start the journey first')
+        st.stop()
+
+    st.title("Habit Update")
 
     dict = backend.habit_update()
 
@@ -142,9 +148,14 @@ if page == "Default":
         st.success(f"Have a wonderful journey, {user_name}")
 
 if page == "Phase Target":
-    st.header("Phase Target")
 
     time_based_habits , numeric_habits = backend.get_phase_target_habit()
+
+    if len(time_based_habits) == 0 and len(numeric_habits) == 0 :
+        st.warning('Go to default and start the journey first')
+        st.stop()
+    
+    st.header("Phase Target")
 
     current_habit = st.selectbox("Select a Habit",time_based_habits + numeric_habits)
 
@@ -169,6 +180,12 @@ if page == "Phase Target":
             st.warning("Target Already Exist")
 
 if page == "Update Phase Target":
+    val = backend.update_phase_target_list()
+
+    if val == False:
+        st.warning('No phase target to update at this time.')
+        st.stop()
+    
     st.header("Update Phase Target")
 
     habit_target , habit_type = backend.update_phase_target_list()
@@ -197,8 +214,12 @@ if page == "Update Phase Target":
 
 if page == "Phase Todo's":
     system_setting = file_manager.load_data(x["system_setting"])
-    current = system_setting['current']['current_phase']
 
+    if 'current' not in system_setting:
+        st.warning('Go to default and start the journey first')
+        st.stop()
+
+    current = system_setting['current']['current_phase']
 
     selected_value = st.sidebar.radio("Select Mode" , ["Phase Mode" , "Edit Mode" , "Update Completed Todo"])
 
@@ -397,6 +418,12 @@ if page == "Spaced Repetition":
             st.error("No subjects available. Please add a subject first!")
 
     if selected_value == "Today's Reviews":
+        val = backend.revise_topic_list()
+
+        if val == False:
+            st.warning('Go to default and start the journey first')
+            st.stop()
+
         topics , df , revised_list = backend.revise_topic_list()
 
         if st.session_state.selected_topic:
@@ -501,8 +528,14 @@ if page == "XP and Reward":
 
     else:
         next_month = today.replace(month=today.month + 1, day=1)
+
+    val = backend.holiday_len()
+    if val == False:
+        st.warning('Go to default and start the journey first')
+        st.stop()
     
     if page == "Add Holiday & Reward":
+
         length , day_free , total_xp_avl  , total_length = backend.holiday_len()
 
         col1 , col2 = st.columns(2)
@@ -576,6 +609,10 @@ if page == "XP and Reward":
             st.subheader('Update Reward XP')
             reward_dict = backend.update_reward_xp()
 
+            if len(reward_dict) == 0:
+                st.warning('No reward to update')
+                st.stop()
+
             reward = st.selectbox('Select an Reward' , reward_dict.keys())
             new_xp = st.number_input('Enter new XP' , step=1 , value= reward_dict[reward])
 
@@ -596,6 +633,12 @@ if page == "XP and Reward":
 
     if page == "Unlock Reward":
         st.header('Unlock Reward')
+
+        val = backend.unlock_reward_prerequisites()
+
+        if val == False:
+            st.warning('No Rewards to unlock')
+            st.stop()
 
         true_list , false_dict , total_xp , holiday_list , xp_change = backend.unlock_reward_prerequisites()
 
