@@ -233,8 +233,8 @@ def is_valid_string(s):
     elif ',' in s:
         return "Contains commas."
     
-    elif len(s) > 20:
-        return "Exceeds 20 characters."
+    elif len(s) > 60:
+        return "Exceeds 60 characters."
     
     return True
 
