@@ -7,7 +7,7 @@ import streamlit as st
 from datetime import time , date , timedelta
 import time as t
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Tracker" , layout="wide")
 
 x = file_manager.files_name()
 file_manager.check_data_folder()
@@ -15,8 +15,8 @@ holiday_val = backend.some_basic_function()
 
 st.sidebar.title('Tracker')
 st.sidebar.header("Navigation")
-page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , "Default" ,
-                                    "Update Phase Target" , "Phase Todo's" , "Spaced Repetition" , "XP and Reward"] , key = "sidebar_radio")
+page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , 
+                                     "Phase Todo's" , "Spaced Repetition" , "XP and Reward" , "Default"] , key = "sidebar_radio")
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -36,6 +36,7 @@ if page == "Add Habit":
         )
 
     new_habit = new_habit.strip()
+
     clicked = st.button("Save Habit", disabled=not new_habit)
     if clicked:
         x = backend.add_habit_filter(new_habit , habit_type)
@@ -154,63 +155,66 @@ if page == "Phase Target":
     if len(time_based_habits) == 0 and len(numeric_habits) == 0 :
         st.warning('Go to default and start the journey first')
         st.stop()
+
+    page = st.sidebar.radio('Select a Page' , ['Set Phase Target' , 'Update Phase Target'])
     
-    st.header("Phase Target")
+    if page == 'Set Phase Target':
+        st.header("Phase Target")
 
-    current_habit = st.selectbox("Select a Habit",time_based_habits + numeric_habits)
+        current_habit = st.selectbox("Select a Habit",time_based_habits + numeric_habits)
 
-    if current_habit in time_based_habits:
-       value =  st.number_input("Time in Hours" , min_value= 1 , step=1)
-       st.write("Habit : {} , Target : {} Hours".format(current_habit , value))
-       value *= 60
+        if current_habit in time_based_habits:
+            value =  st.number_input("Time in Hours" , min_value= 1 , step=1)
+            st.write("Habit : {} , Target : {} Hours".format(current_habit , value))
+            value *= 60
 
-    else :
-        value =  st.number_input("Enter a Numeric Value" , min_value= 1.0 , step= 0.1)
-        st.write("Habit : {} , Target : {}".format(current_habit , value))
+        else :
+            value =  st.number_input("Enter a Numeric Value" , min_value= 1.0 , step= 0.1)
+            st.write("Habit : {} , Target : {}".format(current_habit , value))
 
-    clicked = st.button("Save")
+        clicked = st.button("Save")
 
-    if clicked == True:
-        value = file_manager.add_new_phase_target(current_habit , value)
-        backend.new_phase_target_completion(current_habit)
+        if clicked == True:
+            value = file_manager.add_new_phase_target(current_habit , value)
+            backend.new_phase_target_completion(current_habit)
 
-        if value:
-            st.success("Succesfully Added")
+            if value:
+                st.success("Succesfully Added")
+            else:
+                st.warning("Target Already Exist")
+
+    if page == "Update Phase Target":
+        val = backend.update_phase_target_list()
+
+        if val == False:
+            st.warning('No phase target to update at this time.')
+            st.stop()
+    
+        st.header("Update Phase Target")
+
+        habit_target , habit_type = backend.update_phase_target_list()
+
+        selected_habit = st.selectbox("Select a Target to Update", options=list(habit_target.keys()))
+
+        value = habit_type[selected_habit]
+        default_value = habit_target[selected_habit]
+    
+        if value == "Time":
+            new_input = st.number_input("Enter New Target In Hours(Current Target is Given as default)" , min_value = 1 , step=1 , value=default_value//60)
+            st.text("Habit to update : {} | New Target : {} Hours".format(selected_habit , new_input))
+            new_input *= 60
+
         else:
-            st.warning("Target Already Exist")
+            new_input = st.number_input("Enter New Target(Current Target is Given as default)" , min_value = 1.0 , step=0.1 , value=default_value)
+            st.text("Habit to update : {} | New Target : {}".format(selected_habit , new_input))
 
-if page == "Update Phase Target":
-    val = backend.update_phase_target_list()
+        clicked = st.button("Save")
 
-    if val == False:
-        st.warning('No phase target to update at this time.')
-        st.stop()
-    
-    st.header("Update Phase Target")
+        if clicked == True:
+            value = file_manager.update_new_phase_target(selected_habit , new_input)
 
-    habit_target , habit_type = backend.update_phase_target_list()
-
-    selected_habit = st.selectbox("Select a Target to Update", options=list(habit_target.keys()))
-
-    value = habit_type[selected_habit]
-    default_value = habit_target[selected_habit]
-    
-    if value == "Time":
-        new_input = st.number_input("Enter New Target In Hours(Current Target is Given as default)" , min_value = 1 , step=1 , value=default_value//60)
-        st.text("Habit to update : {} | New Target : {} Hours".format(selected_habit , new_input))
-        new_input *= 60
-
-    else:
-        new_input = st.number_input("Enter New Target(Current Target is Given as default)" , min_value = 1.0 , step=0.1 , value=default_value)
-        st.text("Habit to update : {} | New Target : {}".format(selected_habit , new_input))
-
-    clicked = st.button("Save")
-
-    if clicked == True:
-        value = file_manager.update_new_phase_target(selected_habit , new_input)
-
-        if value :
-            st.success("New Target Updated")
+            if value :
+                st.success("New Target Updated")
 
 if page == "Phase Todo's":
     system_setting = file_manager.load_data(x["system_setting"])
@@ -680,7 +684,3 @@ if page == "XP and Reward":
                         backend.update_xp(used_xp= xp_using)
                         backend.unlocked_reward(claimed_list)
                         st.rerun()
-
-                
-
-            
