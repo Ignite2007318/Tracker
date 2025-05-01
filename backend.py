@@ -93,6 +93,7 @@ def daily_row_add():
             file_manager.daily_file_row_add(x["daily"] , x["system_setting"] , today_date())
             update_phase_target()
             yes_no_xp_gain()
+            quick_task_new_day()
 
 def habit_update():
    df = file_manager.load_data(x["daily"])
@@ -931,7 +932,7 @@ def spaced_rep_save(data):
    current_day = system_setting['current']['overall_current_day']
 
    for task in data:
-      
+
       if task in habit_data['revised_today']['revised_u_id']:
          continue
 
@@ -960,3 +961,68 @@ def spaced_rep_save(data):
 
    file_manager.save_to_csv_update(spaced_repetition , x["spaced_repetition"])
    file_manager.save_to_json(habit_data , x["habit_data"])
+
+def quick_task_add(task):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if "quick_task" not in habit_data:
+      habit_data["quick_task"] = {}
+
+   tasks = task.split(",")
+
+   for i in tasks:
+
+      i = i.strip()
+
+      if i :
+         habit_data["quick_task"][i] = False
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
+
+def quick_task_list():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if "quick_task" not in habit_data:
+      habit_data["quick_task"] = {}
+
+   quick_task = habit_data["quick_task"]
+
+   false_list = []
+   true_list = []
+
+   for task, done in quick_task.items():
+      
+      if not done:
+         false_list.append(task)
+
+      else:
+         true_list.append(task)
+
+   return false_list , true_list
+
+def quick_task_save_completed(data):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   for task in data:
+      habit_data["quick_task"][task] = True
+
+   file_manager.save_to_json(habit_data , x["habit_data"])
+
+
+def quick_task_new_day():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if "quick_task" not in habit_data:
+      habit_data["quick_task"] = {}
+
+   f , true_list = quick_task_list()
+
+   print(true_list)
+
+   xp_gain = len(true_list) * 8
+
+   update_xp(total_xp = xp_gain)
+
+   habit_data["quick_task"] = {}
+
+   file_manager.save_to_json(habit_data , x["habit_data"]) 

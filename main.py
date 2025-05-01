@@ -52,14 +52,14 @@ if page == "Home":
 
         st.markdown('---')
 
-        col1 , col2 = st.columns(2)
+        col1 , col2 , col3 = st.columns(3)
 
         with col1:
             task = backend.dashboard_today_todos()
             val = file_manager.is_file_empty(x['phases_todos'])
 
             if val == True or task.empty:
-                st.info("No tasks for today")
+                st.info("No tasks for today. Go to the Phase Todos page and add some first!")
 
             else:
                 st.subheader("Today's Tasks")
@@ -77,7 +77,7 @@ if page == "Home":
                     t.sleep(1)
                     st.rerun()
 
-        with col2:
+        with col3:
             today_topic , revised_today , need_to_revise_today = backend.dashboard_spaced_rep()
             val = file_manager.is_file_empty(x['spaced_repetition'])
 
@@ -105,13 +105,68 @@ if page == "Home":
                     if checked :
                         data.append(id_task)
             
-            if st.button('Save' , key= 'Space Rep Save'):
-                backend.spaced_rep_save(data)
-                st.success('Saved')
-                t.sleep(1)
-                st.rerun()
+                if st.button('Save' , key= 'Space Rep Save'):
+                    backend.spaced_rep_save(data)
+                    st.success('Saved')
+                    t.sleep(1)
+                    st.rerun()
+        
+        with col2:
+            false_list , true_list = backend.quick_task_list()
+
+            st.subheader('Quick Task')
+            
+            if len(false_list) == 0 and len(true_list) == 0:
+                st.info('No tasks available. Please add some using the quick task section below.')
+
+            if len(true_list) > 0:
+                st.subheader("Completed")
+
+                for i in true_list:
+                    text = "✅ {}".format(i)
+                    st.text(text)
+
+            if len(false_list) > 0:
+                st.subheader('Incomplete')
+                completed_list = []
+
+                counter = 100
+                for i in false_list:
+                    checked = st.checkbox(i , key = counter)
+                    counter += 1
+
+                    if checked:
+                        completed_list.append(i)
+                
+                if st.button('Save' , key = "Save completed"):
+                    backend.quick_task_save_completed(completed_list)
+                    st.success('Saved')
+                    t.sleep(1)
+                    st.rerun()
+
+            if len(true_list) > 0 and len(false_list) == 0: 
+                st.info("No Quick Tasks available or all tasks have been completed for today.")
 
         st.markdown("---")
+
+        col1 , col2 = st.columns(2)
+
+        with col1:
+            st.subheader('Quick Task (Today Only)')
+
+            task = st.text_input("Enter tasks separated by commas:")
+
+            if st.button('Save' , key = "Quick Task Add"):
+                if task:
+                    backend.quick_task_add(task)
+                    st.success('Saved')
+                    t.sleep(1)
+                    st.rerun()
+
+                else:
+                    st.warning("Empty Task")
+                    t.sleep(1)
+                    st.rerun()
                 
 if page == "Add Habit":
     st.title("Add Habit")
