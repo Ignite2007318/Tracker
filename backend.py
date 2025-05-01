@@ -4,7 +4,7 @@ import numpy as np
 import json 
 import file_manager
 import datetime as dt
-from datetime import datetime, date
+from datetime import datetime, timedelta
 import math
 
 x = file_manager.files_name()
@@ -28,7 +28,7 @@ def some_basic_function():
 
       else:
          return False
-
+      
 def check_holiday():
    habit_data = file_manager.load_data(x["habit_data"])
 
@@ -388,7 +388,7 @@ def calculate_next_review_day (difficulty_status , date_to_review , current_day 
    if difficulty_status == 'Need Practice':
       return math.ceil(current_day + 0 + (review_count**1.3)) , review_count + 1
    
-   if difficulty_status == 'Hard':
+   elif difficulty_status == 'Hard':
       return math.ceil(current_day + 1 + (review_count**1.75)) , review_count + 1
 
    elif difficulty_status == 'Medium':
@@ -478,7 +478,7 @@ def revise_topic_list():
       return False
    
    uid_list = habit_data["revised_today"]['need_to_revise_u_id']
-   need_to_revise = habit_data["revised_today"]['revised_u_id']
+   revised = habit_data["revised_today"]['revised_u_id']
    filtered_df = spaced_repetition[spaced_repetition['Unique ID'].isin(uid_list)]
 
    today_topic = dict(zip(
@@ -486,7 +486,7 @@ def revise_topic_list():
         filtered_df['Unique ID'].tolist()
     ))
 
-   return today_topic , filtered_df , need_to_revise
+   return today_topic , filtered_df , revised
 
 def spaced_review_changes(df , difficulty_status , next_review_day , reviewed , u_id , note):
    habit_data = file_manager.load_data(x["habit_data"])
@@ -790,7 +790,6 @@ def add_new_reward(reward , reward_xp):
    if "reward" not in habit_data:
       habit_data["reward"] = {}
 
-   
    habit_data["reward"][reward] = {}
    habit_data["reward"][reward]["Claimed"] = False
    habit_data["reward"][reward]["XP"] = reward_xp
@@ -805,10 +804,11 @@ def daily_reward_reset():
       date_to_check = daily.iloc[-1]['Date']
 
       if date_to_check != today_date():
-         for i in habit_data['reward']:
-            habit_data['reward'][i]['Claimed'] = False
+         if 'reward' in habit_data:
+            for i in habit_data['reward']:
+               habit_data['reward'][i]['Claimed'] = False
       
-         file_manager.save_to_json(habit_data , x["habit_data"])
+            file_manager.save_to_json(habit_data , x["habit_data"])
 
       else:
          pass
@@ -864,3 +864,99 @@ def update_reward_xp():
          reward_dict[i] = habit_data['reward'][i]['XP']
 
    return reward_dict
+
+def check_journey_start():
+   system_setting = file_manager.load_data(x['system_setting'])
+
+   if "journey_starts" in system_setting:
+      return True
+   
+   else:
+      return False
+   
+def basic_initials():
+   system_setting = file_manager.load_data(x['system_setting'])
+   xp = file_manager.load_data(x["xp_points"])
+
+   last_row = xp.iloc[-1]
+   phase = system_setting['current']['current_phase']
+   day = system_setting['current']['current_day']
+
+   date = today_date()
+
+   total_xp = last_row['Total XP Avl']
+   xp_gained = last_row['XP Gained']
+   xp_used = last_row['XP Used']
+
+   if xp.shape[0] >= 2:
+      total_xp_change = int(xp.iloc[-1]["Total XP Avl"]) - int(xp.iloc[-2]["Total XP Avl"])
+
+   else:
+      total_xp_change = int(total_xp - 0)
+
+   return phase , day , date , total_xp , xp_gained , xp_used , total_xp_change
+
+def dashboard_today_todos():
+   system_settng = file_manager.load_data(x["system_setting"])
+   phase_todo = file_manager.load_data(x["phases_todos"])
+
+   phase = system_settng['current']['current_phase']
+   day = system_settng['current']['current_day']
+
+   task = phase_todo[(phase_todo['Phase'] == phase) & (phase_todo['Day'] == day)]
+
+   return task
+
+def dashboard_spaced_rep():
+   spaced_repetition = file_manager.load_data(x["spaced_repetition"])
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   need_to_revise_today = habit_data['revised_today']['need_to_revise_u_id']
+   revised_today = habit_data['revised_today']['revised_u_id']
+
+   df = spaced_repetition[spaced_repetition['Unique ID'].isin(need_to_revise_today)]
+
+   today_topic = dict(zip(
+        (df['Subject'] + " - " + df['Topic'] + " - " + df['Sub Topic'] + " - " + df['Difficulty Status']).tolist(),
+        df['Unique ID'].tolist()
+    ))
+   
+   return today_topic , revised_today , need_to_revise_today
+
+def spaced_rep_save(data):
+   spaced_repetition = file_manager.load_data(x["spaced_repetition"])
+   habit_data = file_manager.load_data(x["habit_data"])
+   system_setting = file_manager.load_data(x["system_setting"])
+
+   current_day = system_setting['current']['overall_current_day']
+
+   for task in data:
+      
+      if task in habit_data['revised_today']['revised_u_id']:
+         continue
+
+      row = spaced_repetition[spaced_repetition['Unique ID'] == task]
+
+      difficulty = row['Difficulty Status'].iloc[0]
+
+      total_review_count = row['Review Count'].iloc[0]
+
+      if difficulty == 'Mastered':
+         today = datetime.today().date()
+         date_to_review = today + timedelta(days=10)
+
+      else: 
+         date_to_review = 0
+
+      next_review_day , new_review_count = calculate_next_review_day(difficulty , date_to_review , current_day , total_review_count)
+
+      habit_data['revised_today']['revised_u_id'].append(task)
+
+      index_row = spaced_repetition.index[spaced_repetition['Unique ID'] == task].tolist()
+      index_row = index_row[0]
+
+      spaced_repetition.at[index_row, 'Next Revision'] = next_review_day
+      spaced_repetition.at[index_row, 'Review Count'] = new_review_count
+
+   file_manager.save_to_csv_update(spaced_repetition , x["spaced_repetition"])
+   file_manager.save_to_json(habit_data , x["habit_data"])

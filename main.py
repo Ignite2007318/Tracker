@@ -14,10 +14,105 @@ file_manager.check_data_folder()
 holiday_val = backend.some_basic_function()
 
 st.sidebar.title('Tracker')
-st.sidebar.header("Navigation")
-page = st.sidebar.radio("Pages", ["Add Habit" , "Habit Update" , "Phase Target" , 
+page = st.sidebar.radio("Navigation", ["Home" , "Add Habit" , "Habit Update" , "Phase Target" , 
                                      "Phase Todo's" , "Spaced Repetition" , "XP and Reward" , "Default"] , key = "sidebar_radio")
 
+
+if page == "Home":
+    val = backend.check_journey_start()
+
+    if val == False:
+        st.warning("Head to the 'Default Page' (last option in the sidebar) and enter your name to begin your journey!")
+        st.stop()
+
+    page = st.sidebar.radio('Select a page' , ['Dashboard' , 'Graphs and Summary'])
+
+    if page == 'Dashboard':
+        st.header('Dashboard')
+
+        val = backend.check_holiday()
+        phase , day , date , total_xp , xp_gained , xp_used , total_xp_change = backend.basic_initials()
+
+        if val == False:
+            st.warning("Today's a holiday! 🫡 Rest up!")
+        
+        col1, col2 , col3 = st.columns(3)
+
+        with col1:
+            st.markdown(f"**Phase:** {phase}")
+            st.markdown(f"**Day:** {day}")
+            st.markdown(f"**Date:** {date}")
+
+        with col2:
+            st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
+        
+        with col3:
+            st.markdown(f"**XP Gained Today:** {xp_gained}")
+            st.markdown(f"**XP Used Today:** {xp_used}")
+
+        st.markdown('---')
+
+        col1 , col2 = st.columns(2)
+
+        with col1:
+            task = backend.dashboard_today_todos()
+            val = file_manager.is_file_empty(x['phases_todos'])
+
+            if val == True or task.empty:
+                st.info("No tasks for today")
+
+            else:
+                st.subheader("Today's Tasks")
+            
+                updated_completion_status_today = {}
+                for index, row in task.iterrows():
+                                checked = st.checkbox(f"{row['Task Description']}", 
+                                                            value=row["Completed"], 
+                                                            key=row["Task ID"])
+                                updated_completion_status_today[row["Task ID"]] = checked
+
+                if st.button('Save'):
+                    backend.save_phase_todos(updated_completion_status_today)
+                    st.success('Saved Successfully')
+                    t.sleep(1)
+                    st.rerun()
+
+        with col2:
+            today_topic , revised_today , need_to_revise_today = backend.dashboard_spaced_rep()
+            val = file_manager.is_file_empty(x['spaced_repetition'])
+
+            if val :
+                st.info("No revisions available. Please go to the Spaced Repetition page and add some first.")
+
+            elif len(need_to_revise_today) == 0 :
+                st.info('No revision scheduled today')
+
+            else:
+                st.subheader("Topics to review today")
+                data = []
+                for topic , id_task in today_topic.items():
+
+                    key_unique = f"revise_{id_task}_{topic}"
+
+                    if id_task in revised_today:
+                        value = True
+
+                    else:
+                        value = False
+
+                    checked = st.checkbox(topic , value = value , key = key_unique)
+
+                    if checked :
+                        data.append(id_task)
+            
+            if st.button('Save' , key= 'Space Rep Save'):
+                backend.spaced_rep_save(data)
+                st.success('Saved')
+                t.sleep(1)
+                st.rerun()
+
+        st.markdown("---")
+                
 if page == "Add Habit":
     st.title("Add Habit")
     st.write("Welcome : ")
