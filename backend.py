@@ -1017,12 +1017,68 @@ def quick_task_new_day():
 
    f , true_list = quick_task_list()
 
-   print(true_list)
-
    xp_gain = len(true_list) * 8
 
    update_xp(total_xp = xp_gain)
 
    habit_data["quick_task"] = {}
 
-   file_manager.save_to_json(habit_data , x["habit_data"]) 
+   file_manager.save_to_json(habit_data , x["habit_data"])
+
+def previous_phase_incomplete_todo():
+   system_setting = file_manager.load_data(x["system_setting"])
+   phase_todo = file_manager.load_data(x["phases_todos"])
+
+   phase = system_setting['current']['current_phase']
+
+   if phase != 1:
+
+      mask = (phase_todo['Phase'] < phase) & (phase_todo['Completed'] == False)
+      df = phase_todo[mask]
+
+      unique_phase = df['Phase'].unique()
+
+      data = {}
+
+      for phase in unique_phase:
+         phase = int(phase)
+
+         data[phase] = {}
+
+         df_phase = df[df['Phase'] == phase]
+         unique_days = df_phase['Day'].unique()
+
+         for day in unique_days:
+
+            day = int(day)
+
+            task_ids = df_phase[df_phase['Day'] == day]['Task ID'].unique().tolist()
+            data[phase][day] = task_ids
+
+      return df , data
+   
+   else:
+      return False
+   
+def previous_task_complete(data):
+   phase_todo = file_manager.load_data(x["phases_todos"])
+
+   for task_id in data:
+      index = phase_todo.index[phase_todo['Task ID'] == task_id].to_list()[0]
+
+      phase_todo.at[index , "Completed"] = True
+   
+   file_manager.save_to_csv_update(phase_todo , x["phases_todos"])
+
+def previous_task_forword(data , day):
+   phase_todo = file_manager.load_data(x['phases_todos'])
+   system_setting = file_manager.load_data(x["system_setting"])
+
+   phase = system_setting['current']['current_phase']
+
+   for task_id in data:
+      index = phase_todo.index[phase_todo['Task ID'] == task_id].to_list()[0]
+      phase_todo.at[index , "Phase"] = phase
+      phase_todo.at[index , "Day"] = day
+
+   file_manager.save_to_csv_update(phase_todo , x["phases_todos"])

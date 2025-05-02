@@ -115,7 +115,7 @@ if page == "Home":
             false_list , true_list = backend.quick_task_list()
 
             st.subheader('Quick Task')
-            
+
             if len(false_list) == 0 and len(true_list) == 0:
                 st.info('No tasks available. Please add some using the quick task section below.')
 
@@ -375,7 +375,7 @@ if page == "Phase Todo's":
 
     current = system_setting['current']['current_phase']
 
-    selected_value = st.sidebar.radio("Select Mode" , ["Phase Mode" , "Edit Mode" , "Update Completed Todo"])
+    selected_value = st.sidebar.radio("Select Mode" , ["Phase Mode" , "Edit Mode" , "Update Completed Todo" , "Incomplete Previous Todo"])
 
     if selected_value == "Phase Mode":
 
@@ -458,6 +458,71 @@ if page == "Phase Todo's":
             
             if value:
                 st.success('Saved Successfully')
+
+    if selected_value == "Incomplete Previous Todo":
+        st.title('Previous Todo')
+
+        val = backend.previous_phase_incomplete_todo()
+        if val == False:
+            st.info('NO Data Avl')
+            st.stop()
+        
+        df , data = backend.previous_phase_incomplete_todo()
+
+        col1 , col2 = st.columns(2)
+
+        with col1:
+            completed_task_id = []
+
+            st.header('Mark as Complete')
+
+            counter = 1000
+            for phase in data:
+                st.header("Phase {}".format(phase))
+
+                for day in data[phase]:
+                    st.subheader("Day {}".format(day))
+
+                    for task_id in data[phase][day]:
+                        checked = st.checkbox((df[df['Task ID'] == task_id]['Task Description'].iloc[0]) , key = counter)
+                        counter += 1
+
+                        if checked:
+                            completed_task_id.append(task_id)
+        
+            if st.button('Save as completed' , key = 'Previous Task Completed'):
+                backend.previous_task_complete(completed_task_id)
+                st.success('Marked as Completed')
+                t.sleep(1)
+                st.rerun()
+
+        with col2:
+            forward_task_id = []
+
+            st.header('Carry Forward Pending Tasks to Current Phase')
+
+            counter = 2000
+            for phase in data:
+                st.header("Phase {}".format(phase))
+
+                for day in data[phase]:
+                    st.subheader("Day {}".format(day))
+
+                    for task_id in data[phase][day]:
+                        checked = st.checkbox((df[df['Task ID'] == task_id]['Task Description'].iloc[0]) , key = counter)
+                        counter += 1
+
+                        if checked:
+                            forward_task_id.append(task_id)
+
+            opt = np.arange(1 , 11)
+            value = st.selectbox("Select day to forword" , opt )
+        
+            if st.button('Forward' , key = 'Carry Forword Task'):
+                backend.previous_task_forword(forward_task_id , value)
+                st.success('Forwarded')
+                t.sleep(1)
+                st.rerun()
 
 if "selected_topic" not in st.session_state:
     st.session_state.selected_topic = None
