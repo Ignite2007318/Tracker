@@ -75,6 +75,9 @@ def yes_no_current_phase_donut():
 
     yes_no_count = int(yes_no_df.count().drop(['Phase' , 'Day' , 'Date']).sum())
 
+    if yes_no_count == 0:
+        yes_no_count = 100
+
     labels = ['Yes', 'No']
     values = [yes_no_sum, yes_no_count - yes_no_sum]
 

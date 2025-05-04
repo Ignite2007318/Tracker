@@ -594,6 +594,7 @@ def check_phase_change():
       if daily.shape[0] > 1:
          if daily.iloc[-1]['Phase'] != system_setting["current"]['last_reset_phase'] and daily.iloc[-1]['Day'] == 1:
             system_setting["current"]['last_reset_phase'] = system_setting["current"]['current_phase']
+            save_phase_targets()
             reset_phase_target_completion()
             file_manager.save_to_json(system_setting , x["system_setting"])
 
@@ -1082,3 +1083,18 @@ def previous_task_forword(data , day):
       phase_todo.at[index , "Day"] = day
 
    file_manager.save_to_csv_update(phase_todo , x["phases_todos"])
+
+def save_phase_targets():
+   habit_data = file_manager.load_data(x["habit_data"])
+   system_setting = file_manager.load_data(x["system_setting"])
+   phase  = system_setting['current']['current_phase'] - 1
+
+   if "previous_phase_target" not in habit_data:
+      habit_data['previous_phase_target'] = {}
+
+   habit_data['previous_phase_target'][phase] = {}
+
+   for key , value in habit_data['phase_target'].items():
+      habit_data['previous_phase_target'][phase][key] = value
+
+   file_manager.save_to_json(habit_data, x["habit_data"])
