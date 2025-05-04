@@ -6,6 +6,7 @@ import numpy as np
 import streamlit as st
 from datetime import time , date , timedelta
 import time as t
+import analysis_graphs as graph
 
 st.set_page_config(page_title="Tracker" , layout="wide")
 
@@ -25,7 +26,7 @@ if page == "Home":
         st.warning("Head to the 'Default Page' (last option in the sidebar) and enter your name to begin your journey!")
         st.stop()
 
-    page = st.sidebar.radio('Select a page' , ['Dashboard' , 'Graphs and Summary'])
+    page = st.sidebar.radio('Select a page' , ['Dashboard' , 'Overall Graphs and Summary'])
 
     if page == 'Dashboard':
         st.header('Dashboard')
@@ -167,7 +168,46 @@ if page == "Home":
                     st.warning("Empty Task")
                     t.sleep(1)
                     st.rerun()
-                
+if page == 'Overall Graphs and Summary':
+    st.header('Graphs')
+
+    col1 , col2 , col3 = st.columns(3)
+
+    phase , day , date , total_xp , xp_gained , xp_used , total_xp_change = backend.basic_initials()
+    
+    with col1:
+        st.markdown(f"**Phase:** {phase}")
+
+    with col2:
+        st.markdown(f"**Day:** {day}")
+
+    with col3:
+        st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
+
+    line_chart , avg_xp = graph.total_xp_chart()
+
+    col1 , col2 = st.columns(2)
+
+    with col1:
+        st.plotly_chart(line_chart , use_container_width = True)
+
+    with col2:
+        st.plotly_chart(avg_xp , use_container_width = True)
+
+    st.markdown("---")
+
+    col1 , col2  = st.columns(2)
+
+    with col1:
+        fig1 = graph.yes_no_current_phase_donut()
+
+        st.plotly_chart(fig1 , use_container_width=False)
+
+    with col2:
+        fig2 = graph.phase_target_completion_chart()
+
+        st.plotly_chart(fig2 , use_container_width=False)
+
 if page == "Add Habit":
     st.title("Add Habit")
     st.write("Welcome : ")
@@ -464,7 +504,7 @@ if page == "Phase Todo's":
 
         val = backend.previous_phase_incomplete_todo()
         if val == False:
-            st.info('NO Data Avl')
+            st.info('No Data Avl')
             st.stop()
         
         df , data = backend.previous_phase_incomplete_todo()
