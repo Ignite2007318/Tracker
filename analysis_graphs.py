@@ -121,5 +121,25 @@ def phase_target_completion_chart():
     
     return phase_target_donut
 
-    
+def average_study_hours_every_phase():
+    daily = file_manager.load_data(x['daily'])
 
+    daily = daily[['Day' , 'Study Time']].groupby('Day').mean().reset_index()
+
+    daily['Study Time Num'] = daily['Study Time']
+
+    daily['Formatted Time'] = daily['Study Time Num'].apply(convert_to_hours_minutes)
+
+    bar_chart = px.bar(daily,
+                x='Day',
+                y='Study Time Num',
+                text='Formatted Time',
+                title='Average Study Time per Day for all Phase',
+                color= 'Day')
+    
+    return bar_chart
+
+def convert_to_hours_minutes(mins):
+    hours = int(mins) // 60
+    minutes = int(mins) % 60
+    return f"{hours}h {minutes}m"

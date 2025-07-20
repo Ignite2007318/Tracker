@@ -293,6 +293,8 @@ def filter_phase_todo():
 
    unique_days = data['Day'].unique()
 
+   unique_days.sort()
+
    return data , unique_days
 
 def save_phase_todos(data):

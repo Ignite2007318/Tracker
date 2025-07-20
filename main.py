@@ -1,4 +1,4 @@
-# streamlit run main.py
+#           streamlit run main.py
 import file_manager
 import backend
 import pandas
@@ -207,6 +207,15 @@ if page == 'Overall Graphs and Summary':
         fig2 = graph.phase_target_completion_chart()
 
         st.plotly_chart(fig2 , use_container_width=False)
+
+    st.markdown("---")
+
+    col1 , col2 = st.columns(2)
+
+    with col1:
+        bar_chart = graph.average_study_hours_every_phase()
+
+        st.plotly_chart(bar_chart)
 
 if page == "Add Habit":
     st.title("Add Habit")
