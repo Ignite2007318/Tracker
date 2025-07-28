@@ -64,7 +64,7 @@ def add_new_habit(csvfilename, jsonfilename, day_time, newhabit, dtype):
     if newhabit in csv_data.columns and newhabit in json_data[day_time]:
         return False  
 
-    csv_data[newhabit] = pd.NA
+    csv_data[newhabit] = 0.0
 
     csv_data.to_csv(os.path.join(DATA_FOLDER, csvfilename), index=False)  
 
@@ -102,7 +102,7 @@ def add_today_if_empty(file_path_csv , file_path_json ,  today):
     file_path_csv = os.path.join(DATA_FOLDER, file_path_csv)
     file_path_json = os.path.join(DATA_FOLDER, file_path_json)
 
-    new_row = {col: "NA" for col in df.columns}
+    new_row = {col: 0.0 for col in df.columns}
     new_row["Date"] = today
     new_row["Phase"] = 1
     new_row["Day"] = 1
@@ -145,7 +145,7 @@ def daily_file_row_add(csv_file , json_file , today):
     setting_json["current"]["current_day"] = current_day
     setting_json["current"]["overall_current_day"] = ((current_phase - 1) * 10) + current_day
 
-    new_row = {col: "NA" for col in daily_csv.columns}
+    new_row = {col: 0.0 for col in daily_csv.columns}
     new_row["Date"] = today
     new_row["Phase"] = current_phase
     new_row["Day"] = current_day
@@ -154,7 +154,7 @@ def daily_file_row_add(csv_file , json_file , today):
         json.dump(setting_json, f, indent=4)
 
     updated_csv = pd.concat([daily_csv, pd.DataFrame([new_row])], ignore_index=True)
-    updated_csv.fillna("NA", inplace=True)
+    updated_csv.fillna(0.0, inplace=True)
     updated_csv.to_csv(file_path_csv, index=False)
 
 

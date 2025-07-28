@@ -4,10 +4,51 @@ import json
 import file_manager
 from datetime import datetime, timedelta
 import plotly.express as px
-import file_manager
 import math
 
 x = file_manager.files_name()
+
+def info_df():
+  df = file_manager.load_data(x["daily"])
+  
+  df["Overall Day"] = (df["Phase"] - 1) * 10 + df["Day"]
+
+  df["Cumulative Study Time"] = df["Study Time"].fillna(0).cumsum()
+
+  df["Total Study Time (Hours)"] = df["Cumulative Study Time"] / 60
+
+  df["Avg Study Time (min)"] = df["Cumulative Study Time"] / df["Overall Day"]
+
+  df["Avg Study Time Hours"] = (df['Avg Study Time (min)'] / 60).round(2)
+
+  new_df = df[[
+      "Phase",
+      "Day",
+      "Overall Day",
+      "Study Time",
+      "Cumulative Study Time",
+      "Total Study Time (Hours)",
+      "Avg Study Time (min)",
+      "Avg Study Time Hours"
+  ]]
+
+  return new_df
+
+def graph_beautify(fig , x_title , y_title):
+
+    fig.update_layout(
+        title_font_size=24,
+        title_font_family="Arial",
+        xaxis_title=x_title,
+        yaxis_title=y_title,
+        xaxis=dict(tickmode="linear", tick0=1, dtick=1),
+        plot_bgcolor="#1e1e1e",
+        paper_bgcolor="#1e1e1e",
+        font=dict(color="white", size=14),
+        hovermode="x unified"
+    )
+
+    return fig
 
 def total_xp_chart():
     xp = file_manager.load_data(x['xp_points'])
@@ -143,10 +184,27 @@ def average_study_hours_every_phase():
     
     return bar_chart
 
-
 def convert_to_hours_minutes(mins):
     if pd.isna(mins):
         return "0h 0m"
     hours = int(mins) // 60
     minutes = int(mins) % 60
     return f"{hours}h {minutes}m"
+
+def avg_study_time_over_the_period():
+
+    new_df = info_df()
+
+    fig = px.line(
+        new_df,
+        x="Overall Day",
+        y="Avg Study Time Hours",
+        title="Average Study Time per Day (Hours)",
+        markers=True,
+        line_shape="spline",
+        template="plotly_dark"
+    )
+
+    graph = graph_beautify(fig , "Days" , "Study Time (Hours)")
+
+    return graph

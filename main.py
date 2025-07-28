@@ -168,54 +168,58 @@ if page == "Home":
                     st.warning("Empty Task")
                     t.sleep(1)
                     st.rerun()
-if page == 'Overall Graphs and Summary':
-    st.header('Graphs')
+    if page == 'Overall Graphs and Summary':
+        st.header('Graphs')
 
-    col1 , col2 , col3 = st.columns(3)
+        col1 , col2 , col3 = st.columns(3)
 
-    phase , day , date , total_xp , xp_gained , xp_used , total_xp_change = backend.basic_initials()
-    
-    with col1:
-        st.markdown(f"**Phase:** {phase}")
+        phase , day , date , total_xp , xp_gained , xp_used , total_xp_change = backend.basic_initials()
+        
+        with col1:
+            st.markdown(f"**Phase:** {phase}")
 
-    with col2:
-        st.markdown(f"**Day:** {day}")
+        with col2:
+            st.markdown(f"**Day:** {day}")
 
-    with col3:
-        st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
+        with col3:
+            st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
 
-    line_chart , avg_xp = graph.total_xp_chart()
+        line_chart , avg_xp = graph.total_xp_chart()
 
-    col1 , col2 = st.columns(2)
+        col1 , col2 = st.columns(2)
 
-    with col1:
-        st.plotly_chart(line_chart , use_container_width = True)
+        with col1:
+            st.plotly_chart(line_chart , use_container_width = True)
 
-    with col2:
-        st.plotly_chart(avg_xp , use_container_width = True)
+        with col2:
+            st.plotly_chart(avg_xp , use_container_width = True)
 
-    st.markdown("---")
+        st.markdown("---")
 
-    col1 , col2  = st.columns(2)
+        col1 , col2  = st.columns(2)
 
-    with col1:
-        fig1 = graph.yes_no_current_phase_donut()
+        with col1:
+            fig1 = graph.yes_no_current_phase_donut()
 
-        st.plotly_chart(fig1 , use_container_width=False)
+            st.plotly_chart(fig1 , use_container_width=False)
 
-    with col2:
-        fig2 = graph.phase_target_completion_chart()
+        with col2:
+            fig2 = graph.phase_target_completion_chart()
 
-        st.plotly_chart(fig2 , use_container_width=False)
+            st.plotly_chart(fig2 , use_container_width=False)
 
-    st.markdown("---")
+        st.markdown("---")
 
-    col1 , col2 = st.columns(2)
+        col1 , col2 = st.columns(2)
 
-    with col1:
-        bar_chart = graph.average_study_hours_every_phase()
+        with col1:
+            bar_chart = graph.average_study_hours_every_phase()
 
-        st.plotly_chart(bar_chart)
+            st.plotly_chart(bar_chart)
+
+        fig = graph.avg_study_time_over_the_period()
+
+        st.plotly_chart(fig)
 
 if page == "Add Habit":
     st.title("Add Habit")
@@ -896,8 +900,6 @@ if page == "XP and Reward":
 
             else:
                st.warning('XP is smaller than 200')
-
-            
 
     if page == "Unlock Reward":
         st.header('Unlock Reward')
