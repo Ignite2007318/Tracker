@@ -9,32 +9,41 @@ import math
 x = file_manager.files_name()
 
 def info_df():
-  df = file_manager.load_data(x["daily"])
-  
-  df["Overall Day"] = (df["Phase"] - 1) * 10 + df["Day"]
 
-  df["Cumulative Study Time"] = df["Study Time"].fillna(0).cumsum()
+    df = file_manager.load_data(x['daily'])
 
-  df["Total Study Time (Hours)"] = df["Cumulative Study Time"] / 60
+    df["Overall Day"] = (df["Phase"] - 1) * 10 + df["Day"]
 
-  df["Avg Study Time (min)"] = df["Cumulative Study Time"] / df["Overall Day"]
+    df["Cumulative Study Time"] = df["Study Time"].fillna(0).cumsum()
 
-  df["Avg Study Time Hours"] = (df['Avg Study Time (min)'] / 60).round(2)
+    df["Total Study Time (Hours)"] = df["Cumulative Study Time"] / 60
 
-  new_df = df[[
-      "Phase",
-      "Day",
-      "Overall Day",
-      "Study Time",
-      "Cumulative Study Time",
-      "Total Study Time (Hours)",
-      "Avg Study Time (min)",
-      "Avg Study Time Hours"
-  ]]
+    df["Avg Study Time (min)"] = df["Cumulative Study Time"] / df["Overall Day"]
 
-  return new_df
+    df["Avg Study Time Hours"] = (df['Avg Study Time (min)'] / 60).round(2)
 
-def graph_beautify(fig , x_title , y_title):
+    df["Exp Avg Study Time (Hours)"] = (
+            df["Study Time"]
+            .fillna(0)
+            .ewm(span=7, adjust=False)
+            .mean() / 60
+        ).round(2)
+
+    new_df = df[[
+        "Phase",
+        "Day",
+        "Overall Day",
+        "Study Time",
+        "Cumulative Study Time",
+        "Total Study Time (Hours)",
+        "Avg Study Time (min)",
+        "Avg Study Time Hours",
+        "Exp Avg Study Time (Hours)"
+    ]]
+
+    return new_df
+
+def graph_beautify_legend_horizontal(fig, x_title, y_title):
 
     fig.update_layout(
         title_font_size=24,
@@ -42,12 +51,30 @@ def graph_beautify(fig , x_title , y_title):
         xaxis_title=x_title,
         yaxis_title=y_title,
         xaxis=dict(tickmode="linear", tick0=1, dtick=1),
-        plot_bgcolor="#1e1e1e",
-        paper_bgcolor="#1e1e1e",
         font=dict(color="white", size=14),
-        hovermode="x unified"
+        hovermode="x unified",
+        legend=dict(
+            title="",
+            orientation="h",
+        )
     )
+    return fig
 
+def graph_beautify_legend_vertical(fig, x_title, y_title):
+
+    fig.update_layout(
+        title_font_size=24,
+        title_font_family="Arial",
+        xaxis_title=x_title,
+        yaxis_title=y_title,
+        xaxis=dict(tickmode="linear", tick0=1, dtick=1),
+        font=dict(color="white", size=14),
+        hovermode="x unified",
+        legend=dict(
+            title="",
+            orientation="v",
+        )
+    )
     return fig
 
 def total_xp_chart():
@@ -193,18 +220,26 @@ def convert_to_hours_minutes(mins):
 
 def avg_study_time_over_the_period():
 
-    new_df = info_df()
+    df_plot = info_df()
+
+    df_melted = df_plot.melt(
+        id_vars=["Overall Day"],
+        value_vars=["Avg Study Time Hours", "Exp Avg Study Time (Hours)"],
+        var_name="Metric",
+        value_name="Study Hours"
+    )
 
     fig = px.line(
-        new_df,
+        df_melted,
         x="Overall Day",
-        y="Avg Study Time Hours",
-        title="Average Study Time per Day (Hours)",
+        y="Study Hours",
+        color="Metric",
+        title="Average vs Exponential Study Time (Hours)",
         markers=True,
         line_shape="spline",
         template="plotly_dark"
     )
 
-    graph = graph_beautify(fig , "Days" , "Study Time (Hours)")
+    graph = graph_beautify_legend_horizontal(fig , "Days" , "Study Time (Hours)")
 
     return graph
