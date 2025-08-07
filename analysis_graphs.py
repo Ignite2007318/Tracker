@@ -165,29 +165,33 @@ def phase_target_completion_chart():
     value = 0
     counter = 0
 
-    for i in habit_data['habit_target_completion'].values():
-        if i < 101:
-            value += i
-            counter += 1
+    if "habit_target_completion" in habit_data:
+        for i in habit_data['habit_target_completion'].values():
+            if i < 101:
+                value += i
+                counter += 1
         
-        else:
-            value += 100
-            counter += 1
+            else:
+                value += 100
+                counter += 1
     
-    completed = (value/counter)
+        completed = (value/counter)
 
-    labels = ['Completed', 'Left or Not Completed']
-    values = [completed, 100 - completed ]
+        labels = ['Completed', 'Left or Not Completed']
+        values = [completed, 100 - completed ]
 
-    phase_target_donut = px.pie(
-        names=labels,
-        values=values,
-        hole=0.6,
-        title="Target Completion for current phase",
-        color=labels,
-        color_discrete_map={'Completed': 'green', 'Left or Not Completed': 'red'})
+        phase_target_donut = px.pie(
+            names=labels,
+            values=values,
+            hole=0.6,
+            title="Target Completion for current phase",
+            color=labels,
+            color_discrete_map={'Completed': 'green', 'Left or Not Completed': 'red'})
+        
+        return phase_target_donut
     
-    return phase_target_donut
+    else :
+        return False
 
 def average_study_hours_every_phase():
     daily = file_manager.load_data(x['daily'])

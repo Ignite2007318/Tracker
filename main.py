@@ -184,6 +184,11 @@ if page == "Home":
         with col3:
             st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
 
+        
+        fig = graph.avg_study_time_over_the_period()
+
+        st.plotly_chart(fig)
+
         line_chart , avg_xp = graph.total_xp_chart()
 
         col1 , col2 = st.columns(2)
@@ -206,7 +211,12 @@ if page == "Home":
         with col2:
             fig2 = graph.phase_target_completion_chart()
 
-            st.plotly_chart(fig2 , use_container_width=False)
+            if fig2:
+
+                st.plotly_chart(fig2 , use_container_width=False)
+
+            else: 
+                st.info("Add Some Phase Target First Too See The Chart")
 
         st.markdown("---")
 
@@ -216,10 +226,6 @@ if page == "Home":
             bar_chart = graph.average_study_hours_every_phase()
 
             st.plotly_chart(bar_chart)
-
-        fig = graph.avg_study_time_over_the_period()
-
-        st.plotly_chart(fig)
 
 if page == "Add Habit":
     st.title("Add Habit")
