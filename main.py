@@ -264,7 +264,8 @@ if page == "Habit Update":
     st.title("Habit Update")
 
     dict = backend.habit_update()
-
+    
+    col_time, col_yesno, col_numeric, col_range = st.columns(4)
     user_inputs = {}
 
     for habit, details in dict.items():
@@ -272,49 +273,51 @@ if page == "Habit Update":
         habit_type = details["habit_type"]
 
         if habit_type is None:
-            st.write(f"**{habit}:** {current_val}")
             user_inputs[habit] = current_val
 
-        elif habit_type == "Numeric value":
-            user_inputs[habit] = st.number_input(
-                f"{habit} (Numeric Value)", 
-                value=0.0 if current_val is None else float(current_val), 
-                step=0.1,
-                format="%.2f"
-            )
+        if habit_type == "Numeric value":
+            with col_numeric:
+                user_inputs[habit] = st.number_input(
+                    f"{habit} (Numeric Value)", 
+                    value=0.0 if current_val is None else float(current_val), 
+                    step=0.1,
+                    format="%.2f"
+                )
 
-        elif habit_type == "Yes/No":
-            if current_val == 1:
-                index_val = 0
-            else:
-                index_val = 1
+        if habit_type == "Yes/No":
+            with col_yesno:
+                if current_val == 1:
+                    index_val = 0
+                else:
+                    index_val = 1
 
-            user_choice = st.selectbox(
-                f"{habit} (Yes/No)",
-                options=["Yes", "No"],
-                index=index_val
-            )
+                user_choice = st.selectbox(
+                    f"{habit} (Yes/No)",
+                    options=["Yes", "No"],
+                    index=index_val
+                )
 
-            user_inputs[habit] = 1 if user_choice == "Yes" else 0
+                user_inputs[habit] = 1 if user_choice == "Yes" else 0
 
-        elif "Range from 1 to 10" in habit_type:
-            default_index = 4 if current_val is None else list(range(1, 11)).index(current_val)
-            user_inputs[habit] = st.selectbox(
-                f"{habit} (Range 1-10)", 
-                options = list(range(1, 11)), 
-                index = default_index
-            )
+        if habit_type == "Range from 1 to 10":
+            with col_range:
+                default_index = 4 if current_val is None else list(range(0, 11)).index(current_val)
+                user_inputs[habit] = st.selectbox(
+                    f"{habit} (Range 1-10)", 
+                    options = list(range(1, 11)), 
+                    index = default_index
+                )
 
-        elif habit_type == "Time":
-        
-            if isinstance(current_val, (int, float)):
-                display_time = time(int(current_val // 60), int(current_val % 60))  
-            else:
-                display_time = time(0, 0)
+        if habit_type == "Time":
+            with col_time:
+                if isinstance(current_val, (int, float)):
+                    display_time = time(int(current_val // 60), int(current_val % 60))  
+                else:
+                    display_time = time(0, 0)
 
-            input_time = st.time_input(f"{habit} (Time)", value=display_time)
+                input_time = st.time_input(f"{habit} (Time)", value=display_time)
 
-            user_inputs[habit] = input_time.hour * 60 + input_time.minute
+                user_inputs[habit] = input_time.hour * 60 + input_time.minute
 
     clicked = st.button("Save")
 
