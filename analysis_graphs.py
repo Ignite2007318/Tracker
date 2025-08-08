@@ -247,3 +247,18 @@ def avg_study_time_over_the_period():
     graph = graph_beautify_legend_horizontal(fig , "Days" , "Study Time (Hours)")
 
     return graph
+
+def total_study_time_line_chart():
+    new_df = info_df()
+
+    fig = px.line(new_df,
+              "Overall Day",
+              "Total Study Time (Hours)",
+              title = "Total Study Time",
+              markers = True,
+              line_shape = "spline",
+              template="plotly_dark")
+    
+    fig = graph_beautify_legend_horizontal(fig , "Days" , "Total Study Time (Hours)")
+
+    return fig

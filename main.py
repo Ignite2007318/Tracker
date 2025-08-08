@@ -189,6 +189,10 @@ if page == "Home":
 
         st.plotly_chart(fig)
 
+        total_study_graph = graph.total_study_time_line_chart()
+
+        st.plotly_chart(total_study_graph)
+
         line_chart , avg_xp = graph.total_xp_chart()
 
         col1 , col2 = st.columns(2)
