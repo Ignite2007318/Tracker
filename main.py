@@ -8,6 +8,7 @@ from datetime import time , date , timedelta
 import time as t
 import analysis_graphs as graph
 
+
 st.set_page_config(page_title="Tracker" , layout="wide")
 
 x = file_manager.files_name()
