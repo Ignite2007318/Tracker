@@ -16,160 +16,157 @@ file_manager.check_data_folder()
 holiday_val = backend.some_basic_function()
 
 st.sidebar.title('Tracker')
-page = st.sidebar.radio("Navigation", ["Home" , "Add Habit" , "Habit Update" , "Phase Target" , 
+page = st.sidebar.radio("Navigation", ["Dashboard" , "Graphs and Analysis","Add Habit" , "Habit Update" , "Phase Target" , 
                                      "Phase Todo's" , "Spaced Repetition" , "XP and Reward" , "Default"] , key = "sidebar_radio")
 
 
-if page == "Home":
+if page == "Dashboard":
     val = backend.check_journey_start()
 
     if val == False:
         st.warning("Head to the 'Default Page' (last option in the sidebar) and enter your name to begin your journey!")
         st.stop()
 
-    page = st.sidebar.radio('Select a page' , ['Dashboard' , 'Overall Graphs and Summary'])
+    st.header('Dashboard')
 
-    if page == 'Dashboard':
-        st.header('Dashboard')
+    val = backend.check_holiday()
+    phase , day , date , total_xp , xp_gained , xp_used , total_xp_change = backend.basic_initials()
 
-        val = backend.check_holiday()
-        phase , day , date , total_xp , xp_gained , xp_used , total_xp_change = backend.basic_initials()
-
-        if val == False:
-            st.warning("Today's a holiday! 🫡 Rest up!")
+    if val == False:
+        st.warning("Today's a holiday! 🫡 Rest up!")
         
-        col1, col2 , col3 = st.columns(3)
+    col1, col2 , col3 = st.columns(3)
 
-        with col1:
-            st.markdown(f"**Phase:** {phase}")
-            st.markdown(f"**Day:** {day}")
-            st.markdown(f"**Date:** {date}")
+    with col1:
+        st.markdown(f"**Phase:** {phase}")
+        st.markdown(f"**Day:** {day}")
+        st.markdown(f"**Date:** {date}")
 
-        with col2:
-            st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
+    with col2:
+        st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
         
-        with col3:
-            st.markdown(f"**XP Gained Today:** {xp_gained}")
-            st.markdown(f"**XP Used Today:** {xp_used}")
+    with col3:
+        st.markdown(f"**XP Gained Today:** {xp_gained}")
+        st.markdown(f"**XP Used Today:** {xp_used}")
 
-        st.markdown('---')
+    st.markdown('---')
 
-        col1 , col2 , col3 = st.columns(3)
+    col1 , col2 , col3 = st.columns(3)
 
-        with col1:
-            task = backend.dashboard_today_todos()
-            val = file_manager.is_file_empty(x['phases_todos'])
+    with col1:
+        task = backend.dashboard_today_todos()
+        val = file_manager.is_file_empty(x['phases_todos'])
 
-            if val == True or task.empty:
-                st.info("No tasks for today. Go to the Phase Todos page and add some first!")
+        if val == True or task.empty:
+            st.info("No tasks for today. Go to the Phase Todos page and add some first!")
 
-            else:
-                st.subheader("Today's Tasks")
+        else:
+            st.subheader("Today's Tasks")
             
-                updated_completion_status_today = {}
-                for index, row in task.iterrows():
-                                checked = st.checkbox(f"{row['Task Description']}", 
+            updated_completion_status_today = {}
+            for index, row in task.iterrows():
+                            checked = st.checkbox(f"{row['Task Description']}", 
                                                             value=row["Completed"], 
                                                             key=row["Task ID"])
-                                updated_completion_status_today[row["Task ID"]] = checked
+                            updated_completion_status_today[row["Task ID"]] = checked
 
-                if st.button('Save'):
-                    backend.save_phase_todos(updated_completion_status_today)
-                    st.success('Saved Successfully')
-                    t.sleep(1)
-                    st.rerun()
+            if st.button('Save'):
+                backend.save_phase_todos(updated_completion_status_today)
+                st.success('Saved Successfully')
+                t.sleep(1)
+                st.rerun()
 
-        with col3:
-            today_topic , revised_today , need_to_revise_today = backend.dashboard_spaced_rep()
-            val = file_manager.is_file_empty(x['spaced_repetition'])
+    with col3:
+        today_topic , revised_today , need_to_revise_today = backend.dashboard_spaced_rep()
+        val = file_manager.is_file_empty(x['spaced_repetition'])
 
-            if val :
-                st.info("No revisions available. Please go to the Spaced Repetition page and add some first.")
+        if val :
+            st.info("No revisions available. Please go to the Spaced Repetition page and add some first.")
 
-            elif len(need_to_revise_today) == 0 :
-                st.info('No revision scheduled today')
+        elif len(need_to_revise_today) == 0 :
+            st.info('No revision scheduled today')
 
-            else:
-                st.subheader("Topics to review today")
-                data = []
-                for topic , id_task in today_topic.items():
+        else:
+            st.subheader("Topics to review today")
+            data = []
+            for topic , id_task in today_topic.items():
 
-                    key_unique = f"revise_{id_task}_{topic}"
+                key_unique = f"revise_{id_task}_{topic}"
 
-                    if id_task in revised_today:
-                        value = True
-
-                    else:
-                        value = False
-
-                    checked = st.checkbox(topic , value = value , key = key_unique)
-
-                    if checked :
-                        data.append(id_task)
-            
-                if st.button('Save' , key= 'Space Rep Save'):
-                    backend.spaced_rep_save(data)
-                    st.success('Saved')
-                    t.sleep(1)
-                    st.rerun()
-        
-        with col2:
-            false_list , true_list = backend.quick_task_list()
-
-            st.subheader('Quick Task')
-
-            if len(false_list) == 0 and len(true_list) == 0:
-                st.info('No tasks available. Please add some using the quick task section below.')
-
-            if len(true_list) > 0:
-                st.subheader("Completed")
-
-                for i in true_list:
-                    text = "✅ {}".format(i)
-                    st.text(text)
-
-            if len(false_list) > 0:
-                st.subheader('Incomplete')
-                completed_list = []
-
-                counter = 100
-                for i in false_list:
-                    checked = st.checkbox(i , key = counter)
-                    counter += 1
-
-                    if checked:
-                        completed_list.append(i)
-                
-                if st.button('Save' , key = "Save completed"):
-                    backend.quick_task_save_completed(completed_list)
-                    st.success('Saved')
-                    t.sleep(1)
-                    st.rerun()
-
-            if len(true_list) > 0 and len(false_list) == 0: 
-                st.info("No Quick Tasks available or all tasks have been completed for today.")
-
-        st.markdown("---")
-
-        col1 , col2 = st.columns(2)
-
-        with col1:
-            st.subheader('Quick Task (Today Only)')
-
-            task = st.text_input("Enter tasks separated by commas:")
-
-            if st.button('Save' , key = "Quick Task Add"):
-                if task:
-                    backend.quick_task_add(task)
-                    st.success('Saved')
-                    t.sleep(1)
-                    st.rerun()
+                if id_task in revised_today:
+                    value = True
 
                 else:
-                    st.warning("Empty Task")
-                    t.sleep(1)
-                    st.rerun()
-    if page == 'Overall Graphs and Summary':
+                    value = False
+
+                checked = st.checkbox(topic , value = value , key = key_unique)
+
+                if checked :
+                    data.append(id_task)
+            
+            if st.button('Save' , key= 'Space Rep Save'):
+                backend.spaced_rep_save(data)
+                st.success('Saved')
+                t.sleep(1)
+                st.rerun()
+        
+    with col2:
+        false_list , true_list = backend.quick_task_list()
+
+        st.subheader('Quick Task')
+
+        if len(false_list) == 0 and len(true_list) == 0:
+             st.info('No tasks available. Please add some using the quick task section below.')
+
+        if len(true_list) > 0:
+            st.subheader("Completed")
+
+            for i in true_list:
+                text = "✅ {}".format(i)
+                st.text(text)
+
+        if len(false_list) > 0:
+             st.subheader('Incomplete')
+        completed_list = []
+
+        counter = 100
+        for i in false_list:
+                checked = st.checkbox(i , key = counter)
+                counter += 1
+
+                if checked:
+                    completed_list.append(i)
+                
+        if st.button('Save' , key = "Save completed"):
+                backend.quick_task_save_completed(completed_list)
+                st.success('Saved')
+                t.sleep(1)
+                st.rerun()
+
+        if len(true_list) > 0 and len(false_list) == 0: 
+             st.info("No Quick Tasks available or all tasks have been completed for today.")
+
+    st.markdown("---")
+
+    col1 , col2 = st.columns(2)
+
+    with col1:
+        st.subheader('Quick Task (Today Only)')
+
+        task = st.text_input("Enter tasks separated by commas:")
+
+        if st.button('Save' , key = "Quick Task Add"):
+            if task:
+                backend.quick_task_add(task)
+                st.success('Saved')
+                t.sleep(1)
+                st.rerun()
+
+            else:
+                st.warning("Empty Task")
+                t.sleep(1)
+                st.rerun()
+if page == 'Graphs and Analysis':
         st.header('Graphs')
 
         col1 , col2 , col3 = st.columns(3)
