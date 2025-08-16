@@ -167,6 +167,10 @@ if page == "Dashboard":
                 t.sleep(1)
                 st.rerun()
 if page == 'Graphs and Analysis':
+
+    graph_page = st.sidebar.radio("Navigation", ["Default Graphs" , "Customizable Graphs" , "Have Some Fun"] , key = "graphs_sidebar")
+
+    if graph_page == "Default Graphs":
         st.header('Graphs')
 
         col1 , col2 , col3 = st.columns(3)
@@ -228,6 +232,13 @@ if page == 'Graphs and Analysis':
             bar_chart = graph.average_study_hours_every_phase()
 
             st.plotly_chart(bar_chart)
+    
+    if graph_page == "Customizable Graphs":
+        st.header("Customizable Graphs")
+
+    if graph_page == "Have Some Fun":
+        st.header("Have Some Fun")
+        st.fuck
 
 if page == "Add Habit":
     st.title("Add Habit")
