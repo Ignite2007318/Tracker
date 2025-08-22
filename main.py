@@ -16,8 +16,8 @@ file_manager.check_data_folder()
 holiday_val = backend.some_basic_function()
 
 st.sidebar.title('Tracker')
-page = st.sidebar.radio("Navigation", ["Dashboard" , "Graphs and Analysis","Add Habit" , "Habit Update" , "Phase Target" , 
-                                     "Phase Todo's" , "Spaced Repetition" , "XP and Reward" , "Default"] , key = "sidebar_radio")
+page = st.sidebar.radio("Navigation", ["Dashboard", "Graphs and Analysis", "Add Habit", "Habit Update", "Phase Target",
+                                     "Phase Todo's", "Spaced Repetition", "XP and Reward", "Default"], key="sidebar_radio")
 
 
 if page == "Dashboard":
@@ -65,10 +65,10 @@ if page == "Dashboard":
             
             updated_completion_status_today = {}
             for index, row in task.iterrows():
-                            checked = st.checkbox(f"{row['Task Description']}", 
-                                                            value=row["Completed"], 
-                                                            key=row["Task ID"])
-                            updated_completion_status_today[row["Task ID"]] = checked
+                checked = st.checkbox(f"{row['Task Description']}", 
+                                        value=row["Completed"], 
+                                        key=row["Task ID"])
+                updated_completion_status_today[row["Task ID"]] = checked
 
             if st.button('Save'):
                 backend.save_phase_todos(updated_completion_status_today)
@@ -171,7 +171,7 @@ if page == 'Graphs and Analysis':
     graph_page = st.sidebar.radio("Navigation", ["Default Graphs" , "Customizable Graphs" , "Have Some Fun"] , key = "graphs_sidebar")
 
     if graph_page == "Default Graphs":
-        st.header('Graphs')
+        st.header('Default Graphs')
 
         col1 , col2 , col3 = st.columns(3)
 
@@ -186,7 +186,6 @@ if page == 'Graphs and Analysis':
         with col3:
             st.metric(label="Total XP", value=total_xp , delta= total_xp_change)
 
-        
         fig = graph.avg_study_time_over_the_period()
 
         st.plotly_chart(fig)
@@ -236,9 +235,25 @@ if page == 'Graphs and Analysis':
     if graph_page == "Customizable Graphs":
         st.header("Customizable Graphs")
 
+        habits = backend.fetch_habit()
+
+        col1 , col2 , col3 = st.columns(3)
+        with col1:
+            graph_type = st.radio("Choose Graph Type", ["Single Habit", "Dual Habit" , "Triple Habit"], key="graph_type")
+
+        with col2:
+            if graph_type == "Single Habit":
+                st.write("Select a habit and click 'Save' to view the analysis")
+                selected_habit = st.selectbox("Choose a habit from the list",habits)
+
+                if st.button('Save'):
+                    st.write("Saved")
+
+                    t.sleep(1)
+                    st.rerun()
+
     if graph_page == "Have Some Fun":
         st.header("Have Some Fun")
-        st.fuck
 
 if page == "Add Habit":
     st.title("Add Habit")

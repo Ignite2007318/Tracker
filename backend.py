@@ -1100,3 +1100,38 @@ def save_phase_targets():
       habit_data['previous_phase_target'][phase][key] = value
 
    file_manager.save_to_json(habit_data, x["habit_data"])
+
+def fetch_habit():
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   habit_list = habit_data["daily_habit"].keys()
+
+   return habit_list
+
+def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
+   habit_data = file_manager.load_data(x["habit_data"])
+
+   if "customize_habits" not in habit_data:
+      habit_data["customize_habits"] = {}
+      habit_data["customize_habits"]["single_habit_setup"] = {}
+      habit_data["customize_habits"]["double_habit_setup"] = {}
+      habit_data["customize_habits"]["triple_habit_setup"] = {}
+
+      file_manager.save_to_json(habit_data , x["habit_data"])
+
+   if habit1 and not habit2 and not habit3:
+      if habit1 in habit_data["customize_habits"]["single_habit_setup"].values():
+            return "Habit already exists"
+      
+      if not habit_data["customize_habits"]["single_habit_setup"]:
+         habit_data["customize_habits"]["single_habit_setup"][1] = habit1
+
+      else:
+         new_habit_no = max(habit_data["customize_habits"]["single_habit_setup"].keys(), default=0) + 1
+         habit_data["customize_habits"]["single_habit_setup"][new_habit_no] = habit1
+
+   elif habit1 and habit2 and not habit3:
+      pass
+
+   else:
+      pass
