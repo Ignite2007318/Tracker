@@ -1127,11 +1127,15 @@ def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
          habit_data["customize_habits"]["single_habit_setup"][1] = habit1
 
       else:
-         new_habit_no = max(habit_data["customize_habits"]["single_habit_setup"].keys(), default=0) + 1
+         keys = habit_data["customize_habits"]["single_habit_setup"].keys()
+         new_habit_no = max(map(int , keys)) + 1
          habit_data["customize_habits"]["single_habit_setup"][new_habit_no] = habit1
+         return('Added successfully')
 
    elif habit1 and habit2 and not habit3:
       pass
 
    else:
       pass
+
+   file_manager.save_to_json(habit_data , x["habit_data"])

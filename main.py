@@ -244,13 +244,23 @@ if page == 'Graphs and Analysis':
         with col2:
             if graph_type == "Single Habit":
                 st.write("Select a habit and click 'Save' to view the analysis")
-                selected_habit = st.selectbox("Choose a habit from the list",habits)
+                single_selected_habit = st.selectbox("Choose a habit from the list",habits)
 
                 if st.button('Save'):
-                    st.write("Saved")
+                    x = backend.save_customize_analysis_habits(single_selected_habit)
+                    st.info(x)
 
                     t.sleep(1)
                     st.rerun()
+        
+        if graph_type == "Single Habit":
+            pass
+
+        if graph_type == "Dual Habit":
+            pass
+
+        if graph_type == "Triple Habit":
+            pass
 
     if graph_page == "Have Some Fun":
         st.header("Have Some Fun")
