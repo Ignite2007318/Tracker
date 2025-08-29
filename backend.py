@@ -1111,17 +1111,16 @@ def fetch_habit():
 def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
    habit_data = file_manager.load_data(x["habit_data"])
 
+   return_state = -10
    if "customize_habits" not in habit_data:
       habit_data["customize_habits"] = {}
       habit_data["customize_habits"]["single_habit_setup"] = {}
       habit_data["customize_habits"]["double_habit_setup"] = {}
       habit_data["customize_habits"]["triple_habit_setup"] = {}
 
-      file_manager.save_to_json(habit_data , x["habit_data"])
-
    if habit1 and not habit2 and not habit3:
       if habit1 in habit_data["customize_habits"]["single_habit_setup"].values():
-            return "Habit already exists"
+            return "Habit Already Exist"
       
       if not habit_data["customize_habits"]["single_habit_setup"]:
          habit_data["customize_habits"]["single_habit_setup"][1] = habit1
@@ -1130,7 +1129,7 @@ def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
          keys = habit_data["customize_habits"]["single_habit_setup"].keys()
          new_habit_no = max(map(int , keys)) + 1
          habit_data["customize_habits"]["single_habit_setup"][new_habit_no] = habit1
-         return('Added successfully')
+         return_state = 1
 
    elif habit1 and habit2 and not habit3:
       pass
@@ -1139,3 +1138,6 @@ def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
       pass
 
    file_manager.save_to_json(habit_data , x["habit_data"])
+
+   if return_state == 1:
+      return "Successfully Added"

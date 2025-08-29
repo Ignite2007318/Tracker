@@ -264,6 +264,7 @@ if page == 'Graphs and Analysis':
 
     if graph_page == "Have Some Fun":
         st.header("Have Some Fun")
+        st.write("Experiment Area Temporarily")
 
 if page == "Add Habit":
     st.title("Add Habit")
