@@ -1119,16 +1119,23 @@ def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
       habit_data["customize_habits"]["triple_habit_setup"] = {}
 
    if habit1 and not habit2 and not habit3:
-      if habit1 in habit_data["customize_habits"]["single_habit_setup"].values():
-            return "Habit Already Exist"
+      for habits in habit_data["customize_habits"]["single_habit_setup"].values():
+         if habit1 == habits['habit']:
+            return "Already Exist"
+      
+      habit_type = habit_data['daily_habit'][habit1]
       
       if not habit_data["customize_habits"]["single_habit_setup"]:
-         habit_data["customize_habits"]["single_habit_setup"][1] = habit1
+         habit_data["customize_habits"]["single_habit_setup"][1] = {"habit" : habit1,
+                                                                     "type" : habit_type}
+         return_state = 1
 
       else:
          keys = habit_data["customize_habits"]["single_habit_setup"].keys()
          new_habit_no = max(map(int , keys)) + 1
-         habit_data["customize_habits"]["single_habit_setup"][new_habit_no] = habit1
+         habit_data["customize_habits"]["single_habit_setup"][new_habit_no] = {"habit" : habit1,
+                                                                                 "type" : habit_type}
+
          return_state = 1
 
    elif habit1 and habit2 and not habit3:
