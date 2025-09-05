@@ -262,3 +262,62 @@ def total_study_time_line_chart():
     fig = graph_beautify_legend_horizontal(fig , "Days" , "Total Study Time (Hours)")
 
     return fig
+
+def cust_single_plot_graph():
+    habit_data = file_manager.load_data(x['habit_data'])
+
+    single = {}
+
+    for i in habit_data['customize_habits']['single_habit_setup'].values():
+        habit = i['habit']
+        habit_type = i['type']
+
+        if habit_type == "Time" or habit_type == "Numeric value":
+            responce = cust_single_habit_df(habit , habit_type , single)
+
+    return responce
+
+def cust_single_habit_df(habit, habit_type , single):
+    print(habit)
+    daily_df = file_manager.load_data(x['daily'])
+    temp_df = daily_df[['Phase', 'Day', habit]].copy()
+    temp_df['Overall Day'] = ((temp_df["Phase"] - 1) * 10) + temp_df['Day']
+
+    temp_df['Total Till Day'] = temp_df[habit].fillna(0).cumsum()
+
+    if habit_type == "Time":
+        temp_df['Total Till Day'] = temp_df['Total Till Day'] / 60
+        temp_df[habit] = temp_df[habit] / 60
+
+    temp_df["Avg"] = (temp_df['Total Till Day'] / temp_df["Overall Day"]).round(2)
+    temp_df["Exp Avg"] = (temp_df[habit].ewm(span=7, adjust=False).mean()).round(2)
+
+    response = cust_single_plot_avg_vs_expo(temp_df, habit , habit_type , single)
+    return response
+
+def cust_single_plot_avg_vs_expo(temp_df , habit , habit_type , single):
+
+    temp_df_melted = temp_df.melt(id_vars = ['Overall Day'],
+                                    value_vars = ["Avg" , "Exp Avg"],
+                                    var_name = "Metric",
+                                    value_name = "Value"
+                    )
+
+    fig1 = px.line(temp_df_melted,
+                    x = "Overall Day",
+                    y = "Value", color="Metric",
+                    title = f"Avg vs Exponential Avg of {habit}",
+                    markers=True,
+                    line_shape="spline",
+                    template="plotly_dark"
+            )
+
+    if habit_type == "Time":
+        fig1 = graph_beautify_legend_horizontal(fig1,"Days","Hours")
+
+    else:
+        fig1 = graph_beautify_legend_horizontal(fig1 , "Days" , f"Avg of {habit}")
+
+    single[habit] = {"Avg vs Expo" : fig1}
+
+    return single

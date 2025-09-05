@@ -254,7 +254,15 @@ if page == 'Graphs and Analysis':
                     st.rerun()
         
         if graph_type == "Single Habit":
-            pass
+            if backend.check_custom_analysis_exist():
+                responce = graph.cust_single_plot_graph()
+
+                for i in responce.values():
+                    for j in i.values():
+                        st.plotly_chart(j)
+            
+            else:
+                st.info("Please Add some habits first")
 
         if graph_type == "Dual Habit":
             pass

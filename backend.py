@@ -1148,3 +1148,10 @@ def save_customize_analysis_habits(habit1 , habit2 = None , habit3 = None):
 
    if return_state == 1:
       return "Successfully Added"
+   
+def check_custom_analysis_exist():
+   habit_data = file_manager.load_data(x["habit_data"])
+   if "customize_habits" not in habit_data:
+      return False
+   else:
+      return True
