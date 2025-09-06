@@ -1,4 +1,7 @@
 #           streamlit run main.py
+
+#           .\setup.bat
+
 import file_manager
 import backend
 import pandas
@@ -166,6 +169,7 @@ if page == "Dashboard":
                 st.warning("Empty Task")
                 t.sleep(1)
                 st.rerun()
+                
 if page == 'Graphs and Analysis':
 
     graph_page = st.sidebar.radio("Navigation", ["Default Graphs" , "Customizable Graphs" , "Have Some Fun"] , key = "graphs_sidebar")
@@ -354,12 +358,19 @@ if page == "Habit Update":
 
         if habit_type == "Range from 1 to 10":
             with col_range:
-                default_index = 4 if current_val is None else list(range(0, 11)).index(current_val)
+                options = list(range(1, 11)) 
+        
+                if current_val == 0.0 or current_val not in options:
+                    default_index = 4 
+                else:
+                    default_index = options.index(int(current_val)) 
+
                 user_inputs[habit] = st.selectbox(
                     f"{habit} (Range 1-10)", 
-                    options = list(range(1, 11)), 
-                    index = default_index
+                    options=options, 
+                    index=default_index
                 )
+
 
         if habit_type == "Time":
             with col_time:
@@ -381,6 +392,9 @@ if page == "Habit Update":
             backend.update_phase_target()
             backend.phase_target_xp_gain()
             st.success("Successfully Added")
+    
+        t.sleep(1)
+        st.rerun()
 
 if page == "Default":
     user_name = st.text_input("Enter you'r name hare")

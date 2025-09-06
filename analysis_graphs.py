@@ -278,7 +278,6 @@ def cust_single_plot_graph():
     return responce
 
 def cust_single_habit_df(habit, habit_type , single):
-    print(habit)
     daily_df = file_manager.load_data(x['daily'])
     temp_df = daily_df[['Phase', 'Day', habit]].copy()
     temp_df['Overall Day'] = ((temp_df["Phase"] - 1) * 10) + temp_df['Day']

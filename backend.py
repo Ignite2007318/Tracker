@@ -501,17 +501,18 @@ def spaced_review_changes(df , difficulty_status , next_review_day , reviewed , 
 
    review_count = df['Review Count'].iloc[0]
    overall_today = system_setting.get("current", {}).get("overall_current_day", 1)
-   next_review_day , review_count= calculate_next_review_day(difficulty_status , next_review_day , overall_today , review_count)
-
+   
    spaced_repetation.at[index_row, 'Difficulty Status'] = difficulty_status
    spaced_repetation.at[index_row, 'Note'] = note
-   spaced_repetation.at[index_row, 'Next Revision'] = next_review_day
-
+   
    if reviewed == "Yes Reviewed":
       if u_id not in habit_data['revised_today']['revised_u_id']:
          habit_data['revised_today']['revised_u_id'].append(u_id)
 
          file_manager.save_to_json(habit_data , x["habit_data"])
+
+         next_review_day , review_count= calculate_next_review_day(difficulty_status , next_review_day , overall_today , review_count)
+         spaced_repetation.at[index_row, 'Next Revision'] = next_review_day
          spaced_repetation.at[index_row, 'Review Count'] = review_count
 
    file_manager.save_to_csv_update(spaced_repetation , x["spaced_repetition"])
