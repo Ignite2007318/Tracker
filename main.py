@@ -937,7 +937,7 @@ if page == "XP and Reward":
         with col2:
             st.subheader('Add Reward')
             reward = st.text_input("Enter Reward")
-            reward_xp = st.number_input("Enter XP (>= 200)" , min_value=200 , step=1)
+            reward_xp = st.number_input("Enter XP (>= 100)" , min_value=100 , step=1)
 
             reward_name = reward.strip()
             clicked = st.button('Save' , disabled = not reward_name ,key=reward_name)
@@ -958,7 +958,7 @@ if page == "XP and Reward":
             reward = st.selectbox('Select an Reward' , reward_dict.keys())
             new_xp = st.number_input('Enter new XP' , step=1 , value= reward_dict[reward])
 
-            if new_xp >= 200:
+            if new_xp >= 100:
                 key = f"save_button_{reward}"
                 click = st.button('Save', key=key)
     
