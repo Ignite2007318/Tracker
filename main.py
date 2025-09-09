@@ -57,6 +57,8 @@ if page == "Dashboard":
     col1 , col2 , col3 = st.columns(3)
 
     with col1:
+        st.subheader("Today's Tasks")
+
         task = backend.dashboard_today_todos()
         val = file_manager.is_file_empty(x['phases_todos'])
 
@@ -64,7 +66,7 @@ if page == "Dashboard":
             st.info("No tasks for today. Go to the Phase Todos page and add some first!")
 
         else:
-            st.subheader("Today's Tasks")
+            
             
             updated_completion_status_today = {}
             for index, row in task.iterrows():
@@ -79,7 +81,8 @@ if page == "Dashboard":
                 t.sleep(1)
                 st.rerun()
 
-    with col3:
+    with col2:
+        st.subheader("Topics to review today")
         today_topic , revised_today , need_to_revise_today = backend.dashboard_spaced_rep()
         val = file_manager.is_file_empty(x['spaced_repetition'])
 
@@ -90,7 +93,7 @@ if page == "Dashboard":
             st.info('No revision scheduled today')
 
         else:
-            st.subheader("Topics to review today")
+            
             data = []
             for topic , id_task in today_topic.items():
 
@@ -113,7 +116,7 @@ if page == "Dashboard":
                 t.sleep(1)
                 st.rerun()
         
-    with col2:
+    with col3:
         false_list , true_list = backend.quick_task_list()
 
         st.subheader('Quick Task')
@@ -171,6 +174,11 @@ if page == "Dashboard":
                 st.rerun()
                 
 if page == 'Graphs and Analysis':
+    val = backend.check_journey_start()
+
+    if val == False:
+        st.warning("Head to the 'Default Page' (last option in the sidebar) and enter your name to begin your journey!")
+        st.stop()
 
     graph_page = st.sidebar.radio("Navigation", ["Default Graphs" , "Customizable Graphs" , "Have Some Fun"] , key = "graphs_sidebar")
 
@@ -307,6 +315,27 @@ if page == "Add Habit":
         else :
             st.warning(x)
 
+        t.sleep(1)
+        st.rerun()
+
+    val = backend.check_journey_start()
+
+    if val == False:
+        st.warning("Head to the 'Default Page' (last option in the sidebar) and enter your name to begin your journey!")
+        st.stop()
+
+    else:
+        st.subheader("Already Added Habits")
+
+        response = backend.habit_update()
+        habits = list(response.keys())
+
+        if len(habits) > 3:
+            for idx, habit in enumerate(habits[3:], start=1):
+                st.markdown(f"{idx}. {habit}")
+        else:
+            st.info("No habits added yet. Try adding some!")
+
 if page == "Habit Update":
     if holiday_val == False:
         st.warning("Today is a holiday. Habit tracking is disabled.")
@@ -320,12 +349,12 @@ if page == "Habit Update":
 
     st.title("Habit Update")
 
-    dict = backend.habit_update()
+    responce = backend.habit_update()
     
     col_time, col_yesno, col_numeric, col_range = st.columns(4)
     user_inputs = {}
 
-    for habit, details in dict.items():
+    for habit, details in responce.items():
         current_val = details["current_val"]
         habit_type = details["habit_type"]
 
@@ -651,6 +680,12 @@ if "selected_topic" not in st.session_state:
     st.session_state.selected_topic = None
 
 if page == "Spaced Repetition":
+
+    val = backend.habit_update()
+
+    if val == False:
+        st.warning('Go to default and start the journey first')
+        st.stop()
 
     selected_value = st.sidebar.radio('Select Page' , ['Add Subject & Topic' , 'Add for review' , "Today's Reviews"])
 
