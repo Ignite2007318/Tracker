@@ -66,8 +66,7 @@ if page == "Dashboard":
             st.info("No tasks for today. Go to the Phase Todos page and add some first!")
 
         else:
-            
-            
+             
             updated_completion_status_today = {}
             for index, row in task.iterrows():
                 checked = st.checkbox(f"{row['Task Description']}", 
@@ -132,18 +131,18 @@ if page == "Dashboard":
                 st.text(text)
 
         if len(false_list) > 0:
-             st.subheader('Incomplete')
-        completed_list = []
+            st.subheader('Incomplete')
+            completed_list = []
 
-        counter = 100
-        for i in false_list:
+            counter = 100
+            for i in false_list:
                 checked = st.checkbox(i , key = counter)
                 counter += 1
 
                 if checked:
                     completed_list.append(i)
                 
-        if st.button('Save' , key = "Save completed"):
+            if st.button('Save' , key = "Save completed"):
                 backend.quick_task_save_completed(completed_list)
                 st.success('Saved')
                 t.sleep(1)
@@ -980,7 +979,7 @@ if page == "XP and Reward":
             if clicked:
                 backend.add_new_reward(reward , reward_xp)
                 st.success('Reward Added')
-                t.sleep(2)
+                t.sleep(1)
                 st.rerun()
 
             st.subheader('Update Reward XP')
@@ -1000,11 +999,11 @@ if page == "XP and Reward":
                 if click:
                     backend.add_new_reward(reward, new_xp)
                     st.success('XP Updated')
-                    t.sleep(2)
+                    t.sleep(1)
                     st.rerun()
 
             else:
-               st.warning('XP is smaller than 200')
+               st.warning('XP is smaller than 100')
 
     if page == "Unlock Reward":
         st.header('Unlock Reward')
