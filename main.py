@@ -326,12 +326,14 @@ if page == "Add Habit":
     else:
         st.subheader("Already Added Habits")
 
-        response = backend.habit_update()
-        habits = list(response.keys())
+        response = backend.fetch_habit()
 
-        if len(habits) > 3:
-            for idx, habit in enumerate(habits[3:], start=1):
-                st.markdown(f"{idx}. {habit}")
+        response = list(response)
+
+        if len(response):
+            for i, item in enumerate(response):
+                st.write(int(i) + 1, item)
+
         else:
             st.info("No habits added yet. Try adding some!")
 
@@ -680,7 +682,7 @@ if "selected_topic" not in st.session_state:
 
 if page == "Spaced Repetition":
 
-    val = backend.habit_update()
+    val = backend.check_journey_start()
 
     if val == False:
         st.warning('Go to default and start the journey first')
