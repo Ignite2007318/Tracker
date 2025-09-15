@@ -276,14 +276,14 @@ if page == 'Graphs and Analysis':
                 st.info("Please Add some habits first")
 
         if graph_type == "Dual Habit":
-            pass
+            st.info('Planned for a future update.')
 
         if graph_type == "Triple Habit":
-            pass
+           st.info('Planned for a future update.')
 
     if graph_page == "Have Some Fun":
         st.header("Have Some Fun")
-        st.write("Experiment Area Temporarily")
+        st.write("Share your ideas for this page! 🎗️")
 
 if page == "Add Habit":
     st.title("Add Habit")
