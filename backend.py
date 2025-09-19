@@ -1155,4 +1155,4 @@ def check_custom_analysis_exist():
    if "customize_habits" not in habit_data:
       return False
    else:
-      return True
+      return True 

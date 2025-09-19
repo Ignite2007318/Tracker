@@ -289,8 +289,3 @@ def update_last_row_in_csv(file_path, new_row_dict):
 
     file_path = f"data/{file_path}"
     df.to_csv(file_path, index=False)
-
-
-
-
-

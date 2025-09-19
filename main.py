@@ -12,13 +12,13 @@ import time as t
 import analysis_graphs as graph
 
 
-st.set_page_config(page_title="Tracker" , layout="wide")
+st.set_page_config(page_title="JuPhase" , layout="wide")
 
 x = file_manager.files_name()
 file_manager.check_data_folder()
 holiday_val = backend.some_basic_function()
 
-st.sidebar.title('Tracker')
+st.sidebar.title('JuPhase')
 page = st.sidebar.radio("Navigation", ["Dashboard", "Graphs and Analysis", "Add Habit", "Habit Update", "Phase Target",
                                      "Phase Todo's", "Spaced Repetition", "XP and Reward", "Default"], key="sidebar_radio")
 

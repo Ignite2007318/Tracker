@@ -319,4 +319,4 @@ def cust_single_plot_avg_vs_expo(temp_df , habit , habit_type , single):
 
     single[habit] = {"Avg vs Expo" : fig1}
 
-    return single
+    return single 
